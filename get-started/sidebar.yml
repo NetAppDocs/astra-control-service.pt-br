@@ -1,0 +1,56 @@
+---
+section: get-started
+title: Comece agora
+entries:
+- title: Saiba mais sobre o Astra Control
+  url: "/get-started/intro.html"
+- title: Implantações de Kubernetes compatíveis
+  url: "/get-started/supported-deployments.html"
+- title: Início rápido
+  url: "/get-started/quick-start.html"
+- title: Configure seu provedor de nuvem
+  entries:
+  - title: Configurar o Amazon Web Services
+    flavor: aws
+    url: "/get-started/set-up-amazon-web-services.html"
+  - title: Configure o Google Cloud
+    flavor: gcp
+    url: "/get-started/set-up-google-cloud.html"
+  - title: Configure o Microsoft Azure com o Azure NetApp Files
+    flavor: azure
+    url: "/get-started/set-up-microsoft-azure-with-anf.html"
+  - title: Configurar o Microsoft Azure com discos gerenciados do Azure
+    flavor: azure
+    url: "/get-started/set-up-microsoft-azure-with-amd.html"
+- title: Registre-se para uma conta
+  url: "/get-started/register.html"
+- title: Adicione um cluster
+  url: "/get-started/add-first-cluster.html"
+  entries:
+  - title: Instalar o Astra Connector para gerenciar clusters
+    url: "/get-started/astra-connector-overview.html"
+    entries:
+    - title: Instalar a versão anterior do Astra Connector para clusters privados
+      url: "/get-started/install-astra-connector-previous.html"
+    - title: Instalar o Astra Connector para clusters declarativos do Kubernetes
+      url: "/get-started/install-astra-connector-declarative.html"
+  - title: Adicionar um cluster gerenciado por provedor
+    entries:
+    - title: Adicionar um cluster gerenciado por provedor público
+      url: "/get-started/add-public-provider-managed-cluster.html"
+    - title: Adicione um cluster gerenciado por provedor privado
+      url: "/get-started/add-private-provider-managed-cluster.html"
+  - title: Adicione um cluster autogerenciado
+    entries:
+    - title: Adicionar um cluster autogestionado público
+      url: "/get-started/add-public-self-managed-cluster.html"
+    - title: Adicione um cluster autogerenciado privado
+      url: "/get-started/add-private-self-managed-cluster.html"
+    - title: Verifique a versão Astra Trident
+      url: "/get-started/check-astra-trident-version.html"
+    - title: Crie um arquivo kubeconfig
+      url: "/get-started/create-kubeconfig.html"
+- title: O que se segue?
+  url: "/get-started/whats-next.html"
+- title: Vídeos
+  url: "/get-started/videos.html"

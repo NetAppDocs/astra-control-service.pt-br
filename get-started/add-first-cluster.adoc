@@ -1,0 +1,23 @@
+---
+sidebar: sidebar 
+permalink: get-started/add-first-cluster.html 
+keywords: discover cluster, add cluster, add kubernetes cluster, discover kubernetes cluster, add cluster 
+summary: Depois de configurar o ambiente, você estará pronto para criar um cluster Kubernetes e adicioná-lo ao Astra Control Service. 
+---
+= Adicionar um cluster ao Astra Control Service
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/get-started/
+
+
+[role="lead"]
+Depois de configurar o ambiente, você estará pronto para criar um cluster Kubernetes e adicioná-lo ao Astra Control Service. Isso permite que você use o Astra Control Service para proteger suas aplicações no cluster.
+
+Dependendo do tipo de cluster que você precisa adicionar ao Astra Control Service, você precisa usar etapas diferentes para adicionar o cluster.
+
+* link:add-public-provider-managed-cluster.html["Adicionar um cluster gerenciado por fornecedor público ao Astra Control Service"^]: Siga estas etapas para adicionar um cluster que tenha um endereço IP público e seja gerenciado por um provedor de nuvem. Você precisará da conta principal do Serviço, da conta de serviço ou da conta de usuário do provedor de nuvem.
+* link:add-private-provider-managed-cluster.html["Adicionar um cluster gerenciado por fornecedor privado ao Astra Control Service"^]: Siga estas etapas para adicionar um cluster que tenha um endereço IP privado e seja gerenciado por um provedor de nuvem. Você precisará da conta principal do Serviço, da conta de serviço ou da conta de usuário do provedor de nuvem.
+* link:add-public-self-managed-cluster.html["Adicionar um cluster público autogerenciado ao Astra Control Service"^]: Siga estas etapas para adicionar um cluster que tenha um endereço IP público e seja gerenciado pela sua organização. Você precisará criar um arquivo kubeconfig para o cluster que deseja adicionar.
+* link:add-private-self-managed-cluster.html["Adicionar um cluster privado e autogerenciado ao Astra Control Service"^]: Siga estas etapas para adicionar um cluster que tenha um endereço IP privado e seja gerenciado pela sua organização. Você precisará criar um arquivo kubeconfig para o cluster que deseja adicionar.
+

@@ -1,0 +1,56 @@
+---
+section: use
+title: Use o Astra Control Service
+entries:
+- title: Inicie sessão
+  url: "/use/log-in.html"
+- title: Gerenciar e proteger aplicativos
+  entries:
+  - title: Comece a gerenciar aplicativos
+    url: "/use/manage-apps.html"
+  - title: Proteja aplicativos
+    url: "/use/protect-apps.html"
+  - title: Proteger um cluster inteiro
+    url: "/use/back-up-full-cluster.html"
+  - title: Restaurar aplicações
+    url: "/use/restore-apps.html"
+  - title: Clonar e migrar aplicações
+    url: "/use/clone-apps.html"
+  - title: Gerenciar ganchos de execução de aplicativos
+    url: "/use/manage-app-execution-hooks.html"
+- title: Ver a integridade da aplicação e da computação
+  entries:
+  - title: Resumo do painel de instrumentos
+    url: "/use/view-dashboard.html"
+  - title: Integridade e detalhes do cluster
+    url: "/use/view-clusters.html"
+  - title: Saúde e detalhes do aplicativo
+    url: "/use/view-apps.html"
+- title: Gerenciar buckets
+  url: "/use/manage-buckets.html"
+- title: Monitorar tarefas em execução
+  url: "/use/monitor-running-tasks.html"
+- title: Gerencie sua conta
+  entries:
+  - title: Configure a faturação
+    url: "/use/set-up-billing.html"
+  - title: Convide e gerencie usuários
+    url: "/use/manage-users.html"
+  - title: Gerenciar funções
+    url: "/use/manage-roles.html"
+  - title: Gerenciar credenciais do fornecedor de nuvem
+    url: "/use/manage-credentials.html"
+  - title: Monitorar a atividade da conta
+    url: "/use/monitor-account-activity.html"
+  - title: Gerenciar notificações
+    url: "/use/manage-notifications.html"
+  - title: Feche a sua conta
+    url: "/use/close-account.html"
+- title: Gerenciar instâncias de nuvem
+  url: "/use/manage-cloud-instances.html"
+- title: Habilite o Astra Control Provisioner
+  url: "/use/enable-acp.html"
+- title: Desgerenciar aplicativos e clusters
+  url: "/use/unmanage.html"
+- title: Implantar uma instância autogerenciada do Astra Control
+  url: "/use/deploy-astra-control-center.html"

@@ -1,0 +1,478 @@
+---
+sidebar: sidebar 
+permalink: use/protect-apps.html 
+keywords: backup, back up, backup apps, back up apps, snapshots, snapshot an app, take a snapshot, take a backup, view backups, view snapshots, set policy, set schedule, schedule backups, schedule snapshots 
+summary: Proteja seus aplicativos tirando snapshots e backups usando uma política de proteção automatizada ou ad hoc. 
+---
+= Proteja aplicativos com snapshots e backups
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/use/
+
+
+[role="lead"]
+Proteja seus aplicativos tirando snapshots e backups usando uma política de proteção automatizada ou ad hoc. Você pode usar a IU do Astra ou https://docs.netapp.com/us-en/astra-automation/index.html["API Astra Control"^] para proteger aplicações.
+
+Saiba mais link:../learn/data-protection.html["Proteção de dados no Astra Control"^]sobre o .
+
+Você pode executar as seguintes tarefas relacionadas à proteção dos dados do aplicativo:
+
+* <<Configurar uma política de proteção>>
+* <<Criar um instantâneo>>
+* <<Crie uma cópia de segurança>>
+* <<Habilite o backup e a restauração de operações de economia de ONTAP nas>>
+* <<Crie um backup imutável>>
+* <<Visualizar instantâneos e backups>>
+* <<Eliminar instantâneos>>
+* <<Cancelar cópias de segurança>>
+* <<Eliminar cópias de segurança>>
+
+
+
+
+== Configurar uma política de proteção
+
+Uma política de proteção protege um aplicativo criando snapshots, backups ou ambos em um cronograma definido. Você pode optar por criar snapshots e backups por hora, diariamente, semanalmente e mensalmente, e especificar o número de cópias a reter. Você pode definir uma política de proteção usando a IU da Web do Astra Control ou um arquivo de recurso personalizado (CR).
+
+Se precisar de backups ou snapshots para executar com mais frequência do que uma vez por hora, você pode https://docs.netapp.com/us-en/astra-automation/workflows/workflows_before.html["Use a API REST do Astra Control para criar snapshots e backups"^].
+
+
+NOTE: Se você estiver definindo uma política de proteção que crie backups imutáveis para gravar buckets WORM (uma vez leitura muitas), verifique se o tempo de retenção dos backups não é menor do que o período de retenção configurado para o bucket.
+
+
+TIP: Offset programações de backup e replicação para evitar sobreposições de agendamento. Por exemplo, execute backups no topo da hora a cada hora e programe a replicação para começar com um deslocamento de 5 minutos e um intervalo de 10 minutos.
+
+[role="tabbed-block"]
+====
+.Configurar uma política de proteção usando a IU da Web
+--
+.Passos
+. Selecione *aplicativos* e, em seguida, selecione o nome de um aplicativo.
+. Selecione *proteção de dados*.
+. Selecione *Configurar política de proteção*.
+. Defina um cronograma de proteção escolhendo o número de snapshots e backups a serem mantidos para as programações horárias, diárias, semanais e mensais.
++
+Você pode definir as programações por hora, diária, semanal e mensal simultaneamente. Uma programação não ficará ativa até que você defina um nível de retenção.
+
++
+Ao definir um nível de retenção para backups, você pode escolher o intervalo onde deseja armazenar os backups.
+
++
+O exemplo a seguir define quatro programações de proteção: Por hora, por dia, por semana e por mês para snapshots e backups.
+
++
+image:screenshot-config-protection-policy.png["Uma captura de tela de uma política de configuração de exemplo, na qual você pode optar por fazer snapshots e backups por hora, diariamente, semanalmente ou mensalmente."]
+
+. [*Tech Preview*] escolha um intervalo de destino para os backups ou snapshots da lista de buckets de armazenamento.
+. Selecione *Revisão*.
+. Selecione *Definir política de proteção.*
+
+
+--
+.[Tech Preview] Configure uma política de proteção usando um CR
+--
+.Passos
+. Crie o arquivo de recurso personalizado (CR) e nomeie-o `astra-control-schedule-cr.yaml`. Atualize os valores entre parêntesis> para atender às necessidades de proteção de dados, configuração de cluster e ambiente Astra Control:
++
+** <CR_NAME>: O nome deste recurso personalizado; escolha um nome único e sensato para o seu ambiente.
+** <APPLICATION_NAME>: O nome do Kubernetes da aplicação para fazer backup.
+** <APPVAULT_NAME>: O nome do AppVault onde o conteúdo de backup deve ser armazenado.
+** <BACKUPS_RETAINED>: O número de backups a reter. Zero indica que nenhum backup deve ser criado.
+** <SNAPSHOTS_RETAINED>: O número de instantâneos a reter. Zero indica que nenhum instantâneo deve ser criado.
+** <GRANULARITY>: A frequência em que o horário deve ser executado. Valores possíveis, juntamente com campos associados obrigatórios:
++
+*** `hourly` (requer que você `spec.minute` especifique )
+*** `daily` (requer que você especifique `spec.minute` e `spec.hour`)
+*** `weekly` (requer que você especifique `spec.minute`, `spec.hour` e `spec.dayOfWeek`)
+*** `monthly` (requer que você especifique `spec.minute`, `spec.hour` e `spec.dayOfMonth`)
+
+
+** <DAY_OF_MONTH>: _(Opcional)_ o dia do mês (1 - 31) que o cronograma deve ser executado. Este campo é necessário se a granularidade estiver definida como `monthly`.
+** <DAY_OF_WEEK>: _(Opcional)_ o dia da semana (0 - 7) que o cronograma deve ser executado. Os valores de 0 ou 7 indicam domingo. Este campo é necessário se a granularidade estiver definida como `weekly`.
+** <HOUR_OF_DAY>: _(Opcional)_ a hora do dia (0 - 23) em que o horário deve ser executado. Este campo é necessário se a granularidade estiver definida como `daily`, `weekly` `monthly` ou .
+** <MINUTE_OF_HOUR>: _(Opcional)_ o minuto da hora (0 - 59) que o cronograma deve ser executado. Este campo é necessário se a granularidade estiver definida como `hourly`, , `daily` `weekly` , ou `monthly`.
++
+[source, yaml]
+----
+apiVersion: astra.netapp.io/v1
+kind: Schedule
+metadata:
+  namespace: astra-connector
+  name: <CR_NAME>
+spec:
+  applicationRef: <APPLICATION_NAME>
+  appVaultRef: <APPVAULT_NAME>
+  backupRetention: "<BACKUPS_RETAINED>"
+  snapshotRetention: "<SNAPSHOTS_RETAINED>"
+  granularity: <GRANULARITY>
+  dayOfMonth: "<DAY_OF_MONTH>"
+  dayOfWeek: "<DAY_OF_WEEK>"
+  hour: "<HOUR_OF_DAY>"
+  minute: "<MINUTE_OF_HOUR>"
+----
+
+
+. Depois de preencher o `astra-control-schedule-cr.yaml` ficheiro com os valores corretos, aplique o CR:
++
+[source, console]
+----
+kubectl apply -f astra-control-schedule-cr.yaml
+----
+
+
+--
+====
+.Resultado
+O Astra Control implementa a política de proteção de dados criando e retendo snapshots e backups usando o cronograma e a política de retenção definidos por você.
+
+
+
+== Criar um instantâneo
+
+Você pode criar um snapshot sob demanda a qualquer momento.
+
+.Sobre esta tarefa
+O Astra Control é compatível com a criação de snapshot usando classes de storage com o respaldo dos seguintes drivers:
+
+* `ontap-nas`
+* `ontap-san`
+* `ontap-san-economy`
+
+
+
+IMPORTANT: Se o aplicativo usar uma classe de armazenamento suportada pelo `ontap-nas-economy` driver, os snapshots não poderão ser criados. Use uma classe de armazenamento alternativa para instantâneos.
+
+[role="tabbed-block"]
+====
+.Crie um instantâneo usando a IU da Web
+--
+.Passos
+. Selecione *aplicações*.
+. No menu Opções na coluna *ações* para o aplicativo desejado, selecione *Instantâneo*.
+. Personalize o nome do instantâneo e selecione *Next*.
+. [*Tech Preview*] escolha um intervalo de destino para o instantâneo na lista de intervalos de armazenamento.
+. Reveja o resumo do instantâneo e selecione *Snapshot*.
+
+
+--
+.[Tech preview] Crie um instantâneo usando um CR
+--
+.Passos
+. Crie o arquivo de recurso personalizado (CR) e nomeie-o `astra-control-snapshot-cr.yaml`. Atualize os valores entre parêntesis> para corresponder ao seu ambiente Astra Control e à configuração de cluster:
++
+** <CR_NAME>: O nome deste recurso personalizado; escolha um nome único e sensato para o seu ambiente.
+** <APPLICATION_NAME>: O nome do Kubernetes da aplicação para snapshot.
+** <APPVAULT_NAME>: O nome do AppVault onde o conteúdo do snapshot deve ser armazenado.
+** <RECLAIM_POLICY>: _(Opcional)_ define o que acontece com um snapshot quando o snapshot CR é excluído. Opções válidas:
++
+*** `Retain`
+*** `Delete` (predefinição)
++
+[source, yaml]
+----
+apiVersion: astra.netapp.io/v1
+kind: Snapshot
+metadata:
+  namespace: astra-connector
+  name: <CR_NAME>
+spec:
+  applicationRef: <APPLICATION_NAME>
+  appVaultRef: <APPVAULT_NAME>
+  reclaimPolicy: <RECLAIM_POLICY>
+----
+
+
+
+
+. Depois de preencher o `astra-control-snapshot-cr.yaml` ficheiro com os valores corretos, aplique o CR:
++
+[source, console]
+----
+kubectl apply -f astra-control-snapshot-cr.yaml
+----
+
+
+--
+====
+.Resultado
+O processo de instantâneo é iniciado. Um instantâneo é bem-sucedido quando o status é *saudável* na coluna *Estado* na página *proteção de dados* > *instantâneos*.
+
+
+
+== Crie uma cópia de segurança
+
+Você também pode fazer backup de um aplicativo a qualquer momento.
+
+ifdef::azure[]
+
+[NOTE]
+====
+Esteja ciente de como o espaço de armazenamento é manipulado quando você faz backup de um aplicativo hospedado no storage Azure NetApp Files. link:../learn/azure-storage.html#application-backups["Backups de aplicativos"]Consulte para obter mais informações.
+
+====
+endif::azure[]
+
+[NOTE]
+====
+O Astra Control é compatível com a criação de backup usando classes de storage com o respaldo dos seguintes drivers:
+
+* `ontap-nas`
+* `ontap-nas-economy`
+* `ontap-san`
+* `ontap-san-economy`
+
+
+====
+.Sobre esta tarefa
+Buckets no Astra Control não relatam a capacidade disponível. Antes de fazer backup ou clonar aplicativos gerenciados pelo Astra Control, verifique as informações do bucket no sistema de gerenciamento de storage apropriado.
+
+Se o seu aplicativo usa uma classe de armazenamento suportada pelo `ontap-nas-economy` driver, você precisa <<Habilite o backup e a restauração de operações de economia de ONTAP nas,ativar cópia de segurança e restauro>>de funcionalidade. Certifique-se de que definiu um `backendType` parâmetro no https://docs.netapp.com/us-en/trident/trident-reference/objects.html#kubernetes-storageclass-objects["Objeto de storage do Kubernetes"^] com um valor de `ontap-nas-economy` antes de executar quaisquer operações de proteção.
+
+[role="tabbed-block"]
+====
+.Crie um backup usando a IU da Web
+--
+.Passos
+. Selecione *aplicações*.
+. No menu Opções na coluna *ações* para o aplicativo desejado, selecione *Backup*.
+. Personalize o nome da cópia de segurança.
+. Escolha se deseja fazer backup do aplicativo a partir de um snapshot existente. Se selecionar esta opção, pode escolher entre uma lista de instantâneos existentes.
+. [*Tech Preview*] escolha um intervalo de destino para o backup na lista de buckets de armazenamento.
+. Selecione *seguinte*.
+. Reveja o resumo da cópia de segurança e selecione *cópia de segurança*.
+
+
+--
+.[Tech Preview] Crie uma cópia de segurança utilizando um CR
+--
+.Passos
+. Crie o arquivo de recurso personalizado (CR) e nomeie-o `astra-control-backup-cr.yaml`. Atualize os valores entre parêntesis> para corresponder ao seu ambiente Astra Control e à configuração de cluster:
++
+** <CR_NAME>: O nome deste recurso personalizado; escolha um nome único e sensato para o seu ambiente.
+** <APPLICATION_NAME>: O nome do Kubernetes da aplicação para fazer backup.
+** <APPVAULT_NAME>: O nome do AppVault onde o conteúdo de backup deve ser armazenado.
++
+[source, yaml]
+----
+apiVersion: astra.netapp.io/v1
+kind: Backup
+metadata:
+  namespace: astra-connector
+  name: <CR_NAME>
+spec:
+  applicationRef: <APPLICATION_NAME>
+  appVaultRef: <APPVAULT_NAME>
+----
+
+
+. Depois de preencher o `astra-control-backup-cr.yaml` ficheiro com os valores corretos, aplique o CR:
++
+[source, console]
+----
+kubectl apply -f astra-control-backup-cr.yaml
+----
+
+
+--
+====
+.Resultado
+O Astra Control cria um backup da aplicação.
+
+[NOTE]
+====
+* Se a sua rede tiver uma interrupção ou estiver anormalmente lenta, uma operação de backup pode acabar com o tempo limite. Isso faz com que o backup falhe.
+* Se for necessário cancelar uma cópia de segurança em execução, utilize as instruções em <<Cancelar cópias de segurança>>. Para excluir o backup, aguarde até que ele esteja concluído e, em seguida, use as instruções na <<Eliminar cópias de segurança>>.
+* Após uma operação de proteção de dados (clone, backup, restauração) e subsequente redimensionamento persistente de volume, há até vinte minutos de atraso antes que o novo tamanho de volume seja exibido na IU. A operação de proteção de dados é bem-sucedida em minutos. Você pode usar o software de gerenciamento do back-end de storage para confirmar a alteração no tamanho do volume.
+
+
+====
+
+
+== Habilite o backup e a restauração de operações de economia de ONTAP nas
+
+O Astra Control Provisioner oferece funcionalidade de backup e restauração que pode ser habilitada para back-ends de storage que usam a `ontap-nas-economy` classe de storage.
+
+.Antes de começar
+* Você ativou o Astra Control Provisioner ou o Astra Trident.
+* Você definiu uma aplicação no Astra Control. Esta aplicação terá uma funcionalidade de proteçãoão limitada até concluir este procedimento.
+* Você `ontap-nas-economy` selecionou como a classe de armazenamento padrão para o back-end de armazenamento.
+
+
+.Expanda para obter as etapas de configuração
+[%collapsible]
+====
+. Faça o seguinte no back-end de storage do ONTAP:
++
+.. Encontre o SVM que hospeda os `ontap-nas-economy` volumes baseados na aplicação.
+.. Faça login em um terminal conetado ao ONTAP onde os volumes são criados.
+.. Ocultar o diretório de snapshot para o SVM:
++
+
+NOTE: Essa alteração afeta todo o SVM. O diretório oculto continuará acessível.
+
++
+[source, console]
+----
+nfs modify -vserver <svm name> -v3-hide-snapshot enabled
+----
++
+
+IMPORTANT: Verifique se o diretório de snapshot no back-end de storage do ONTAP está oculto. A falha em ocultar esse diretório pode levar à perda de acesso ao aplicativo, especialmente se estiver usando NFSv3.
+
+
+
+. Faça o seguinte no Astra Control Provisioner ou Astra Trident:
++
+.. Ative o diretório de snapshot para cada PV baseado em ONTAP-nas-Economy e associado ao aplicativo:
++
+[source, console]
+----
+tridentctl update volume <pv name> --snapshot-dir=true --pool-level=true -n trident
+----
+.. Confirme se o diretório instantâneo foi ativado para cada PV associado:
++
+[source, console]
+----
+tridentctl get volume <pv name> -n trident -o yaml | grep snapshotDir
+----
++
+Resposta:
+
++
+[listing]
+----
+snapshotDirectory: "true"
+----
+
+
+. No Astra Control, atualize a aplicação depois de ativar todos os diretórios snapshot associados para que o Astra Control reconheça o valor alterado.
+
+
+.Resultado
+A aplicação está pronta para fazer backup e restauração com o Astra Control. Cada PVC também está disponível para ser usado por outras aplicações para backups e restaurações.
+
+====
+
+
+== Crie um backup imutável
+
+Um backup imutável não pode ser modificado, excluído ou substituído, desde que a política de retenção no bucket que armazena o backup o proíba. Você pode criar backups imutáveis fazendo backup de aplicativos em buckets que tenham uma política de retenção configurada. link:../learn/data-protection.html#immutable-backups["Proteção de dados"^]Consulte para obter informações importantes sobre como trabalhar com backups imutáveis.
+
+.Antes de começar
+Você precisa configurar o intervalo de destino com uma política de retenção. A forma como você faz isso será diferente dependendo do provedor de armazenamento que você usa. Consulte a documentação do fornecedor de armazenamento para obter mais informações:
+
+* *Amazon Web Services*: https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock-console.html["Ative o bloqueio de objetos S3D ao criar o bucket e defina um modo de retenção padrão de "governança" com um período de retenção padrão"^].
+* *Google Cloud*: https://cloud.google.com/storage/docs/using-bucket-lock["Configure um bucket com uma política de retenção e especifique um período de retenção"^].
+* *Microsoft Azure*: https://learn.microsoft.com/en-us/azure/storage/blobs/immutable-policy-configure-container-scope?tabs=azure-portal["Configure um bucket de armazenamento de blob com uma política de retenção baseada no tempo no escopo do nível do contêiner"^].
+* *NetApp StorageGRID*: https://docs.netapp.com/us-en/storagegrid-117/tenant/creating-s3-bucket.html["Ative o bloqueio de objetos S3D ao criar o bucket e defina um modo de retenção padrão de "conformidade" com um período de retenção padrão"^].
+
+
+
+NOTE: Buckets no Astra Control não relatam a capacidade disponível. Antes de fazer backup ou clonar aplicativos gerenciados pelo Astra Control, verifique as informações do bucket no sistema de gerenciamento de storage apropriado.
+
+
+IMPORTANT: Se o aplicativo usar uma classe de armazenamento apoiada pelo `ontap-nas-economy` driver, certifique-se de que você definiu um `backendType` parâmetro no https://docs.netapp.com/us-en/trident/trident-reference/objects.html#kubernetes-storageclass-objects["Objeto de storage do Kubernetes"^] com um valor de `ontap-nas-economy` antes de executar qualquer operação de proteção.
+
+.Passos
+. Selecione *aplicações*.
+. No menu Opções na coluna *ações* para o aplicativo desejado, selecione *Backup*.
+. Personalize o nome da cópia de segurança.
+. Escolha se deseja fazer backup do aplicativo a partir de um snapshot existente. Se selecionar esta opção, pode escolher entre uma lista de instantâneos existentes.
+. Escolha um intervalo de destino para o backup na lista de buckets de armazenamento. Um bucket WORM (write once read many) é indicado com um status de "bloqueado" ao lado do nome do bucket.
++
+
+NOTE: Se o balde for um tipo não suportado, isso é indicado quando você passa o Mouse sobre ou seleciona o balde.
+
+. Selecione *seguinte*.
+. Reveja o resumo da cópia de segurança e selecione *cópia de segurança*.
+
+
+.Resultado
+O Astra Control cria um backup imutável do aplicativo.
+
+[NOTE]
+====
+* Se a sua rede tiver uma interrupção ou estiver anormalmente lenta, uma operação de backup pode acabar com o tempo limite. Isso faz com que o backup falhe.
+* Se você tentar criar dois backups imutáveis do mesmo aplicativo no mesmo bucket ao mesmo tempo, o Astra Control impede que o segundo backup seja iniciado. Aguarde até que o primeiro backup esteja concluído antes de iniciar outro.
+* Não é possível cancelar um backup imutável em execução.
+* Após uma operação de proteção de dados (clone, backup, restauração) e subsequente redimensionamento persistente de volume, há até vinte minutos de atraso antes que o novo tamanho de volume seja exibido na IU. A operação de proteção de dados é bem-sucedida em minutos. Você pode usar o software de gerenciamento do back-end de storage para confirmar a alteração no tamanho do volume.
+
+
+====
+
+
+== Visualizar instantâneos e backups
+
+Você pode exibir os snapshots e backups de um aplicativo na guia proteção de dados.
+
+
+NOTE: Um backup imutável é indicado com um status de "bloqueado" ao lado do intervalo que está usando.
+
+.Passos
+. Selecione *aplicativos* e, em seguida, selecione o nome de um aplicativo gerenciado.
+. Selecione *proteção de dados*.
++
+Os instantâneos são apresentados por predefinição.
+
+. Selecione *backups* para consultar a lista de backups.
+
+
+
+
+== Eliminar instantâneos
+
+Exclua os snapshots programados ou sob demanda que você não precisa mais.
+
+.Passos
+. Selecione *aplicativos* e, em seguida, selecione o nome de um aplicativo gerenciado.
+. Selecione *proteção de dados*.
+. No menu Opções na coluna *ações* para o instantâneo desejado, selecione *Excluir instantâneo*.
+. Digite a palavra "delete" para confirmar a exclusão e selecione *Yes, Delete snapshot*.
+
+
+.Resultado
+O Astra Control exclui o Snapshot.
+
+
+
+== Cancelar cópias de segurança
+
+Pode cancelar uma cópia de segurança em curso.
+
+
+TIP: Para cancelar uma cópia de segurança, a cópia de segurança tem de estar `Running` no estado. Não é possível cancelar uma cópia de segurança que esteja `Pending` no estado.
+
+
+NOTE: Não é possível cancelar um backup imutável em execução.
+
+.Passos
+. Selecione *aplicativos* e, em seguida, selecione o nome de um aplicativo.
+. Selecione *proteção de dados*.
+. Selecione *backups*.
+. No menu Opções na coluna *ações* para o backup desejado, selecione *Cancelar*.
+. Digite a palavra "cancelar" para confirmar a operação e selecione *Sim, cancelar backup*.
+
+
+
+
+== Eliminar cópias de segurança
+
+Exclua os backups programados ou sob demanda que você não precisa mais.
+
+
+NOTE: Se for necessário cancelar uma cópia de segurança em execução, utilize as instruções em <<Cancelar cópias de segurança>>. Para excluir o backup, aguarde até que ele esteja concluído e, em seguida, use estas instruções.
+
+
+NOTE: Você não pode excluir um backup imutável antes que o período de retenção expire.
+
+.Passos
+. Selecione *aplicativos* e, em seguida, selecione o nome de um aplicativo.
+. Selecione *proteção de dados*.
+. Selecione *backups*.
+. No menu Opções na coluna *ações* para o backup desejado, selecione *Excluir backup*.
+. Digite a palavra "delete" para confirmar a exclusão e selecione *Yes, Delete backup*.
+
+
+.Resultado
+O Astra Control exclui o backup.

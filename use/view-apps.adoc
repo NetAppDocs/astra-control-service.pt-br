@@ -1,0 +1,41 @@
+---
+sidebar: sidebar 
+permalink: use/view-apps.html 
+keywords: view app, view app status, view app protection status, view app pods, view persistent storage 
+summary: Depois de começar a gerenciar uma aplicação, o Astra Control fornecerá detalhes sobre a aplicação que permite identificar seu status, status de proteção, pods, storage persistente e muito mais. 
+---
+= Veja a saúde e os detalhes de um aplicativo
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/use/
+
+
+[role="lead"]
+Depois de começar a gerenciar uma aplicação, o Astra Control fornece detalhes sobre a aplicação que permite identificar seu status de comunicação (se o Astra Control pode se comunicar com a aplicação), seu status de proteção (se ele está totalmente protegido em caso de falha), os pods, storage persistente e muito mais.
+
+.Passos
+. Selecione *aplicativos* e, em seguida, selecione o nome de um aplicativo.
+. Encontre as informações que você está procurando:
++
+Estado da aplicação:: Fornece um status que reflete se o Astra Control pode se comunicar com a aplicação.
+Estado de proteção da aplicação:: Fornece um status de quão bem o aplicativo está protegido:
++
+--
+** *Totalmente protegido*: O aplicativo tem um agendamento de backup ativo e um backup bem-sucedido com menos de uma semana de idade
+** *Parcialmente protegido*: O aplicativo tem um agendamento de backup ativo, um agendamento de snapshot ativo ou um backup ou snapshot bem-sucedido
+** *Desprotegido*: Aplicativos que não estão totalmente protegidos ou parcialmente protegidos.
++
+_Você não pode estar totalmente protegido até ter um backup recente_. Isso é importante porque os backups são armazenados em um armazenamento de objetos longe dos volumes persistentes. Se uma falha ou acidente apagar o cluster e seu armazenamento persistente, então você precisa de um backup para recuperar. Um instantâneo não permitiria que você se recuperasse.
+
+
+
+--
+Visão geral:: Informações sobre o estado dos pods associados ao aplicativo.
+Proteção de dados:: Permite configurar uma política de proteção de dados e exibir os snapshots e backups existentes.
+Armazenamento:: Mostra os volumes persistentes no nível do aplicativo. O estado de um volume persistente é da perspetiva do cluster do Kubernetes.
+Recursos:: Permite verificar quais recursos estão sendo armazenados em backup e gerenciados.
+Atividade:: As atividades do Astra Control relacionadas ao aplicativo.
+
+
+

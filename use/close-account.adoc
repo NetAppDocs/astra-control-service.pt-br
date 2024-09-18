@@ -1,0 +1,26 @@
+---
+sidebar: sidebar 
+permalink: use/close-account.html 
+keywords: close account, delete account, delete my account, close my account 
+summary: Se você não precisar mais de uma conta Astra Control, poderá fechá-la a qualquer momento. 
+---
+= Feche a sua conta
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/use/
+
+
+[role="lead"]
+Se você não precisar mais de sua conta Astra Control, poderá fechá-la a qualquer momento.
+
+
+NOTE: Os buckets que o Astra Control criou automaticamente serão excluídos automaticamente quando você fechar sua conta.
+
+.Passos
+. link:unmanage.html["Desgerencie todas as aplicações e clusters"].
+. link:manage-credentials.html["Remover credenciais do Astra Control"].
+. Selecione *conta > faturamento > método de pagamento*.
+. Selecione *Fechar conta*.
+. Introduza o nome da sua conta e confirme para fechar a conta.
+

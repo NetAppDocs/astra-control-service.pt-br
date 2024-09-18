@@ -1,0 +1,42 @@
+---
+sidebar: sidebar 
+permalink: learn/user-roles-namespaces.html 
+keywords: users, roles, user roles, namespace, namespaces, account, accounts, permissions, restriction, restrict, constraint 
+summary: Saiba mais sobre os tipos de proteção de dados disponíveis no Astra Control e a melhor forma de usá-los para proteger suas aplicações. 
+---
+= Funções de usuário e namespaces
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/learn/
+
+
+[role="lead"]
+Saiba mais sobre funções de usuário e namespaces no Astra Control e como usá-los para controlar o acesso a recursos na sua organização.
+
+
+
+== Funções de utilizador
+
+Você pode usar funções para controlar o acesso que os usuários têm a recursos ou funcionalidades do Astra Control. Veja a seguir as funções de usuário no Astra Control:
+
+* Um *proprietário* tem permissões de administrador e pode excluir contas.
+* Um *Admin* tem permissões de Membro e pode convidar outros usuários.
+* Um *Membro* pode gerenciar totalmente aplicativos e clusters.
+* Um *Viewer* pode visualizar recursos.
+
+
+Pode adicionar restrições a um utilizador Membro ou Visualizador para restringir o utilizador a um ou mais <<Namespaces>>.
+
+
+
+== Namespaces
+
+Um namespace é um escopo que você pode atribuir a recursos específicos em um cluster gerenciado pelo Astra Control. O Astra Control descobre os namespaces de um cluster quando você adiciona o cluster ao Astra Control. Uma vez descoberto, os namespaces estão disponíveis para atribuir como restrições aos usuários. Somente os membros que têm acesso a esse namespace podem usar esse recurso. Você pode usar namespaces para controlar o acesso a recursos usando um paradigma que faz sentido para sua organização; por exemplo, por regiões físicas ou divisões dentro de uma empresa. Quando você adiciona restrições a um usuário, você pode configurar esse usuário para ter acesso a todos os namespaces ou apenas um conjunto específico de namespaces. Você também pode atribuir restrições de namespace usando rótulos de namespace.
+
+
+
+== Encontre mais informações
+
+* link:../use/manage-roles.html["Gerenciar funções"]
+

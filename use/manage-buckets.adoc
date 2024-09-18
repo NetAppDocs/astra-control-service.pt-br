@@ -1,0 +1,268 @@
+---
+sidebar: sidebar 
+permalink: use/manage-buckets.html 
+keywords: bucket, buckets, add buckets, change default bucket, default, default bucket, remove bucket, delete bucket, S3, s3, storage, object storage, object store, store, object 
+summary: Gerencie os buckets que o Astra usa para backups e clones adicionando buckets adicionais e alterando o bucket padrão dos clusters no seu fornecedor de nuvem. 
+---
+= Gerenciar buckets
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/use/
+
+
+[role="lead"]
+É possível gerenciar os buckets que o Astra usa para backups e clones. Você pode adicionar buckets adicionais, remover buckets existentes e alterar o bucket padrão dos clusters do Kubernetes em uma instância de nuvem.
+
+Somente proprietários e administradores podem gerenciar buckets.
+
+
+
+== Como o Astra Control usa buckets
+
+Quando você começa a gerenciar o primeiro cluster de Kubernetes para uma instância de nuvem, o Astra Control Service cria o bucket inicial para isso link:manage-cloud-instances.html["instância de nuvem"^].
+
+Você pode designar manualmente um bucket como o bucket padrão para uma instância de nuvem. Se você fizer isso, o Astra Control Service usará esse bucket por padrão para backups e clones criados em qualquer cluster gerenciado nessa instância de nuvem (você pode selecionar um bucket diferente para backups). Se você executar um clone ativo de uma aplicação de qualquer um dos clusters gerenciados em uma instância de nuvem para outro cluster, o Astra Control Service usará o bucket padrão da instância de nuvem de origem para executar a operação de clone.
+
+Você pode definir o mesmo intervalo que o bucket padrão para várias instâncias da nuvem.
+
+Você pode selecionar de qualquer bucket ao criar uma política de proteção ou iniciar um backup ad-hoc.
+
+
+TIP: O Astra Control Service verifica se um intervalo de destino está acessível antes de iniciar um backup ou um clone.
+
+
+
+== Ver buckets existentes
+
+Veja a lista de buckets disponíveis no Astra Control Service para determinar seu status e identificar o bucket padrão (se definido) para sua instância de nuvem.
+
+Um balde pode ter qualquer um dos seguintes estados:
+
+Pendente:: Depois de adicionar um bucket, ele começa no estado pendente enquanto o Astra Control o descobre.
+Disponível:: O balde está disponível para uso pelo Astra Control.
+Removido:: O balde não está operacional no momento. Passe o Mouse sobre o ícone de status para identificar qual é o problema.
++
+--
+Se um bucket estiver no estado removido, você ainda poderá defini-lo como o bucket padrão e atribuí-lo a um cronograma de proteção. Mas se o intervalo não estiver no estado disponível no momento em que uma operação de proteção de dados for iniciada, essa operação falhará.
+
+--
+
+
+.Passo
+. Vá para *Buckets*.
++
+A lista de buckets disponíveis para o Astra Control Service é exibida.
+
+
+
+
+
+== Adicione um balde adicional
+
+Você pode adicionar buckets adicionais a qualquer momento. Isso permite que você escolha entre buckets ao criar uma política de proteção ou iniciar um backup ad-hoc e permite alterar o bucket padrão usado por uma instância de nuvem.
+
+Você pode adicionar os seguintes tipos de buckets:
+
+* Amazon Web Services
+* Genérico S3
+* Google Cloud Platform
+* Microsoft Azure
+* NetApp ONTAP S3
+* NetApp StorageGRID S3
+
+
+.Antes de começar
+* Certifique-se de que sabe o nome de um balde existente.
+* Garanta que você tenha credenciais para o bucket que fornecem ao Astra Control as permissões de que ele precisa para gerenciar o bucket.
+
+
+ifdef::azure[]
+
+* Se o seu bucket estiver no Microsoft Azure:
++
+** O bucket deve pertencer ao grupo de recursos chamado _astra-backup-rg_.
+** Se a configuração de desempenho da instância da conta de armazenamento do Azure estiver definida como "Premium", a configuração "tipo de conta Premium" deve ser definida como "Bloquear blobs".
+
+
+
+
+endif::azure[]
+
+.Passos
+. Vá para *Buckets*.
+. Selecione *Adicionar* e siga as instruções para adicionar o intervalo.
++
+** *Tipo*: Escolha seu provedor de nuvem.
+** *Nome do bucket existente*: Insira o nome do bucket.
+** *Descrição*: Opcionalmente, insira uma descrição do balde.
+
+
+
+
+ifdef::azure[]
+
+* *Conta de armazenamento* (somente Azure): Insira o nome da sua conta de armazenamento Azure. Esse bucket deve pertencer ao grupo de recursos chamado _astra-backup-rg_.
+
+
+endif::azure[]
+
+ifdef::aws[]
+
+* *Nome do servidor S3 ou endereço IP* (apenas tipos de bucket AWS e S3): Insira o nome de domínio totalmente qualificado do endpoint S3 que corresponde à sua região, sem `https://`.  https://docs.aws.amazon.com/general/latest/gr/s3.html["A documentação da Amazon"^]Consulte para obter mais informações.
+
+
+endif::aws[]
+
+* *Selecionar credenciais*: Insira as credenciais que fornecem ao Astra Control Service as permissões necessárias para gerenciar o bucket. As informações que você precisa fornecer variam de acordo com o tipo de balde.
++
+.. Selecione *Adicionar* para adicionar o intervalo.
+
+
+
+
+.Resultado
+O Astra Control Service adiciona o balde. Agora você pode escolher esse intervalo ao criar uma política de proteção ou executar um backup ad-hoc. Você também pode definir esse bucket como o bucket padrão para uma instância da nuvem.
+
+
+
+== Altere o intervalo predefinido
+
+Você pode alterar o intervalo padrão de uma instância da nuvem. O Astra Control Service usará esse bucket por padrão para backups e clones. Cada instância da nuvem tem seu próprio bucket padrão.
+
+
+NOTE: O Astra Control não atribui automaticamente um bucket padrão a nenhuma instância de nuvem. Você precisa definir manualmente um bucket padrão para uma instância de nuvem antes de executar operações de clone de aplicativo entre dois clusters.
+
+.Passos
+. Vá para *instâncias da nuvem*.
+. Selecione o menu de configuração na coluna *ações* para a instância de nuvem que você deseja editar.
+. Selecione *Editar*.
+. Na lista de buckets, selecione o bucket que você deseja criar o bucket padrão para essa instância da nuvem.
+. Selecione *Atualizar*.
+
+
+
+
+== Retire um balde
+
+Você pode remover um balde que não está mais em uso ou não está saudável. Você pode querer fazer isso para manter a configuração do armazenamento de objetos simples e atualizada.
+
+[NOTE]
+====
+* Não é possível remover um balde predefinido. Se você quiser remover esse balde, primeiro selecione outro balde como padrão.
+* Não é possível remover um bucket do WORM (write once read many) antes do período de retenção do fornecedor de nuvem do bucket expirar. Os baldes SEM-FIM são indicados com "bloqueado" junto ao nome do balde.
+
+
+====
+.Antes de começar
+* Você deve verificar se não há backups em execução ou concluídos para esse bucket antes de começar.
+* Você deve verificar se o bucket não está sendo usado em nenhum backup agendado.
+
+
+Se houver, você não será capaz de continuar.
+
+.Passos
+. Vá para *Buckets*.
+. No menu *ações*, selecione *Remover*.
++
+
+NOTE: O Astra Control garante primeiro que não haja políticas de agendamento usando o bucket dos backups e que não haja backups ativos no bucket que você está prestes a remover.
+
+. Digite "remove" para confirmar a ação.
+. Selecione *Sim, remova o balde*.
+
+
+
+
+== [Tech Preview] Gerencie um bucket usando um recurso personalizado
+
+Você pode adicionar um bucket usando um recurso personalizado Astra Control (CR) no cluster de aplicações. Adicionar fornecedores de bucket do armazenamento de objetos é essencial para fazer backup das aplicações e do storage persistente ou clonar aplicações entre clusters. O Astra Control armazena os backups ou clones nos buckets do armazenamento de objetos que você define. Se você estiver usando o método de recurso personalizado, a funcionalidade de snapshots de aplicativo requer um intervalo.
+
+Você não precisa de um bucket no Astra Control se estiver clonando a configuração da aplicação e o storage persistente para o mesmo cluster.
+
+O recurso personalizado do bucket do Astra Control é conhecido como AppVault. Este CR contém as configurações necessárias para que um balde seja usado em operações de proteção.
+
+.Antes de começar
+* Garanta que você tenha um bucket acessível a partir dos clusters gerenciados pelo Astra Control Center.
+* Certifique-se de que tem credenciais para o bucket.
+* Certifique-se de que o balde é um dos seguintes tipos:
++
+** NetApp ONTAP S3
+** NetApp StorageGRID S3
+** Microsoft Azure
+** Genérico S3
+
+
+
+
+
+NOTE: A Amazon Web Services (AWS) e o Google Cloud Platform (GCP) usam o tipo de bucket Generic S3.
+
+
+NOTE: Embora o Astra Control Center ofereça suporte ao Amazon S3 como um provedor de bucket do Generic S3, o Astra Control Center pode não oferecer suporte a todos os fornecedores de armazenamento de objetos que claim o suporte ao S3 da Amazon.
+
+.Passos
+. Crie o arquivo de recurso personalizado (CR) e nomeie-o (por exemplo, `astra-appvault.yaml` ).
+. Configure os seguintes atributos:
++
+** *metadata.name*: _(obrigatório)_ o nome do recurso personalizado do AppVault.
+** *Spec.prefix*: _(Opcional)_ Um caminho que é prefixado aos nomes de todas as entidades armazenadas no AppVault.
+** *spec.providerConfig*: _(required)_ armazena a configuração necessária para acessar o AppVault usando o provedor especificado.
+** *spec.providerCredentials*: _(obrigatório)_ armazena referências a qualquer credencial necessária para acessar o AppVault usando o provedor especificado.
++
+*** *spec.providerCredentials.valueFromSecret*: _(Opcional)_ indica que o valor da credencial deve vir de um segredo.
++
+**** *Key*: _(obrigatório se valueFromSecret for usado)_ a chave válida do segredo para selecionar.
+**** *Name*: _(obrigatório se valueFromSecret for usado)_ Nome do segredo contendo o valor para este campo. Deve estar no mesmo namespace.
+
+
+
+
+** *spec.providerType*: _(obrigatório)_ determina o que fornece o backup; por exemplo, o NetApp ONTAP S3 ou o Microsoft Azure.
++
+Exemplo YAML:
+
++
+[source, yaml]
+----
+apiVersion: astra.netapp.io/v1
+kind: AppVault
+metadata:
+  name: astra-appvault
+spec:
+  providerType: generic-s3
+  providerConfig:
+    path: testpath
+    endpoint: 192.168.1.100:80
+    bucketName: bucket1
+    secure: "false"
+  providerCredentials:
+    accessKeyID:
+      valueFromSecret:
+        name: s3-creds
+        key: accessKeyID
+    secretAccessKey:
+      valueFromSecret:
+        name: s3-creds
+        key: secretAccessKey
+----
+
+
+. Depois de preencher o `astra-appvault.yaml` ficheiro com os valores corretos, aplique o CR:
++
+[source, console]
+----
+kubectl apply -f astra-appvault.yaml -n astra-connector
+----
++
+
+NOTE: Quando você adiciona um balde, o Astra Control marca um balde com o indicador de balde padrão. O primeiro bucket que você criar se torna o bucket padrão. À medida que você adiciona buckets, você pode decidir mais tarde link:../use/manage-buckets.html#set-the-default-bucket["defina outro intervalo padrão"^].
+
+
+
+
+
+== Encontre mais informações
+
+* https://docs.netapp.com/us-en/astra-automation/index.html["Use a API Astra Control"^]
+

@@ -1,0 +1,86 @@
+---
+sidebar: sidebar 
+permalink: use/unmanage.html 
+keywords: unmanage app, remove app, stop managing app, stop managing clusters, unmanage cluster, remove cluster 
+summary: Remova do Astra Control todas as aplicações ou clusters que você não quiser mais gerenciar. 
+---
+= Desgerenciar aplicativos e clusters
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/use/
+
+
+[role="lead"]
+Remova do Astra Control todas as aplicações ou clusters que você não quiser mais gerenciar.
+
+
+
+== Pare de gerenciar um aplicativo
+
+Pare de gerenciar aplicações que não deseja mais fazer backup, snapshot ou clonar a partir do Astra Control.
+
+Quando você desgerencia um aplicativo:
+
+* Todos os backups e snapshots existentes serão excluídos.
+* Aplicativos e dados permanecem disponíveis.
+
+
+.Passos
+. Na barra de navegação à esquerda, selecione *aplicações*.
+. Selecione a aplicação.
+. No menu Opções na coluna ações, selecione *Desgerenciar*.
+. Reveja as informações.
+. Digite "Unmanage" (Desgerenciar) para confirmar.
+. Selecione *Sim, Desgerenciar aplicativo*.
+
+
+.Resultado
+O Astra Control deixa de gerenciar a aplicação.
+
+
+
+== Pare de gerenciar um cluster
+
+Pare de gerenciar o cluster que não deseja mais gerenciar a partir do Astra Control.
+
+ifdef::gcp[]
+
+
+NOTE: Antes de desgerenciar o cluster, você deve desgerenciar os aplicativos associados ao cluster.
+
+Como prática recomendada, recomendamos que você remova o cluster do Astra Control antes de excluí-lo pelo GCP.
+
+endif::gcp[]
+
+Quando você desgerencia um cluster:
+
+* Essa ação impede que o cluster seja gerenciado pelo Astra Control. Ele não faz alterações na configuração do cluster e não exclui o cluster.
+* O Astra Control Provisioner ou o Astra Trident não serão desinstalados do cluster. https://docs.netapp.com/us-en/trident/trident-managing-k8s/uninstall-trident.html["Saiba como desinstalar o Astra Trident"^].
+
+
+.Passos
+. Selecione *clusters*.
+. Marque a caixa de seleção do cluster que você não deseja mais gerenciar.
+. No menu de opções na coluna *ações*, selecione *Desgerenciar*.
+. Confirme se deseja desgerenciar o cluster e selecione *Sim, desgerenciar*.
+
+
+.Resultado
+O status do cluster muda para *Remover*. Depois disso, o cluster será removido da página *clusters* e não será mais gerenciado pelo Astra Control.
+
+
+
+== Exclusão de clusters do seu fornecedor de nuvem
+
+Antes de excluir um cluster do Kubernetes que tenha volumes persistentes (PV) residentes em classes de storage do NetApp, primeiro exclua as declarações de volume persistente (PVC) seguindo um dos métodos abaixo. Excluir o PVC e o PV antes de excluir o cluster garante que você não receba contas inesperadas do seu provedor de nuvem.
+
+* *Método nº 1*: Exclua os namespaces da carga de trabalho do aplicativo do cluster. _Não_ exclua o namespace Trident.
+* *Método nº 2*: Exclua os PVCs e os pods, ou a implantação onde os PVS são montados.
+
+
+Quando você gerencia um cluster de Kubernetes a partir do Astra Control, as aplicações nesse cluster usam seu fornecedor de nuvem como back-end de storage para volumes persistentes. Se você excluir o cluster do seu provedor de nuvem sem primeiro remover os PVS, os volumes de back-end serão _não_ excluídos junto com o cluster.
+
+Usar um dos métodos acima excluirá os PVS correspondentes do cluster. Certifique-se de que não existem PVS residentes nas classes de armazenamento do NetApp no cluster antes de excluí-lo.
+
+Se você não excluiu os volumes persistentes antes de excluir o cluster, precisará excluir manualmente os volumes de back-end do seu provedor de nuvem.

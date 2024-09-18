@@ -1,0 +1,26 @@
+---
+sidebar: sidebar 
+permalink: use/deploy-astra-control-center.html 
+keywords: get started, manage apps, manage account 
+summary: Implante uma instância autônoma e autogerenciada do Astra Control. 
+---
+= Implantar uma instância autogerenciada do Astra Control
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/use/
+
+
+[role="lead"]
+Se você quiser uma instância autogerenciada do Astra Control que resida na sua rede, é possível implantar o Astra Control Center diretamente do Astra Control Service.
+
+.Passos
+. Na área primeiros passos do Dashboard, selecione *Deploy a self-managed instance of Astra Control*.
+. Execute um dos seguintes procedimentos:
++
+** Gere um novo token de API selecionando *Generate*.
+** Cole em um token de API REST do Astra Control existente. Consulte o https://docs.netapp.com/us-en/astra-automation/get-started/get_api_token.html["Documentação do Astra Automation"^] para obter orientação sobre como gerar um token de API.
+
+
+. Siga as instruções na janela *Deploy Astra Control Center*.
+

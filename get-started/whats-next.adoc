@@ -1,0 +1,25 @@
+---
+sidebar: sidebar 
+permalink: get-started/whats-next.html 
+keywords: get started, manage apps, manage account 
+summary: Agora que você fez login e adicionou clusters ao Astra Control, está pronto para começar a usar os recursos de gerenciamento de dados de aplicações do Astra Control. 
+---
+= O que se segue?
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/get-started/
+
+
+[role="lead"]
+Agora que você fez login e adicionou um cluster ao Astra Control, está pronto para começar a usar os recursos de gerenciamento de dados de aplicações do Astra Control.
+
+* link:../use/manage-apps.html["Comece a gerenciar aplicativos"]
+* link:../use/protect-apps.html["Proteja aplicativos"]
+* link:../use/clone-apps.html["Clonar aplicações"]
+* link:../use/set-up-billing.html["Configure a faturação"]
+* link:../use/manage-users.html["Convide e gerencie usuários"]
+* link:../use/manage-credentials.html["Gerenciar credenciais do fornecedor de nuvem"]
+* link:../use/manage-notifications.html["Gerenciar notificações"]
+* link:../use/deploy-astra-control-center.html["Implantar uma instância autogerenciada do Astra Control"]
+

@@ -1,0 +1,321 @@
+---
+sidebar: sidebar 
+permalink: get-started/add-private-provider-managed-cluster.html 
+keywords: discover cluster, add cluster, add kubernetes cluster, discover kubernetes cluster, add cluster 
+summary: Depois de configurar o ambiente, você estará pronto para criar um cluster Kubernetes e adicioná-lo ao Astra Control Service. 
+---
+= Adicionar um cluster gerenciado por fornecedor privado ao Astra Control Service
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/get-started/
+
+
+[role="lead"]
+Você pode usar o Astra Control Service para gerenciar clusters privados do Google Kubernetes Engine (GKE). Estas instruções presumem que você já criou um cluster privado AKS ou OpenShift e preparou um método seguro para acessá-lo remotamente; para obter mais informações sobre como criar e acessar clusters privados AKS ou OpenShift, consulte a seguinte documentação:
+
+* https://docs.microsoft.com/azure/aks/private-clusters["Documentação do Azure para clusters AKS privados"^]
+* https://learn.microsoft.com/en-us/azure/openshift/howto-create-private-cluster-4x["Documentação do Azure para clusters privados do OpenShift"^]
+
+
+Você pode usar o Astra Control Service para gerenciar clusters privados do Azure Kubernetes Service (AKS), bem como clusters privados do Red Hat OpenShift no AKS. Estas instruções presumem que você já criou um cluster privado AKS ou OpenShift e preparou um método seguro para acessá-lo remotamente; para obter mais informações sobre como criar e acessar clusters privados AKS ou OpenShift, consulte a seguinte documentação:
+
+* https://docs.microsoft.com/azure/aks/private-clusters["Documentação do Azure para clusters AKS privados"^]
+* https://learn.microsoft.com/en-us/azure/openshift/howto-create-private-cluster-4x["Documentação do Azure para clusters privados do OpenShift"^]
+
+
+Você pode usar o Astra Control Service para gerenciar clusters privados do Amazon Elastic Kubernetes Service (EKS). Essas instruções presumem que você já criou um cluster EKS privado e preparou um método seguro para acessá-lo remotamente; para obter mais informações sobre como criar e acessar clusters EKS privados, consulte o https://docs.aws.amazon.com/eks/latest/userguide/private-clusters.html["Documentação do Amazon EKS"^].
+
+Você precisa executar as seguintes tarefas para adicionar seu cluster privado ao Astra Control Service:
+
+. <<Instale o conetor Astra>>
+. <<Configurar o armazenamento persistente>>
+. <<Adicione o cluster gerenciado por fornecedor privado ao Astra Control Service>>
+
+
+
+
+== Instale o conetor Astra
+
+Antes de adicionar um cluster privado, é necessário instalar o Astra Connector no cluster para que o Astra Control possa se comunicar com ele. link:install-astra-connector-previous.html["Instalar a versão anterior do Astra Connector para clusters privados gerenciados com workflows não nativos em Kubernetes"]Consulte para obter instruções.
+
+
+
+== Configurar o armazenamento persistente
+
+Configurar o armazenamento persistente para o cluster. Consulte a documentação Introdução para obter mais informações sobre como configurar o armazenamento persistente:
+
+ifdef::azure[]
+
+* link:set-up-microsoft-azure-with-anf.html["Configure o Microsoft Azure com o Azure NetApp Files"^]
+* link:set-up-microsoft-azure-with-amd.html["Configurar o Microsoft Azure com discos gerenciados do Azure"^]
+
+
+endif::azure[]
+
+ifdef::aws[]
+
+* link:set-up-amazon-web-services.html["Configurar o Amazon Web Services"^]
+
+
+endif::aws[]
+
+ifdef::gcp[]
+
+* link:set-up-google-cloud.html["Configure o Google Cloud"^]
+
+
+endif::gcp[]
+
+
+
+== Adicione o cluster gerenciado por fornecedor privado ao Astra Control Service
+
+Agora você pode adicionar o cluster privado ao Astra Control Service.
+
+Ao gerenciar os clusters do Azure Kubernetes Service e do Google Kubernetes Engine, observe que você tem duas opções para instalação e gerenciamento de ciclo de vida do Astra Control Provisioner:
+
+* Você pode usar o Astra Control Service para gerenciar automaticamente o ciclo de vida do Astra Control Provisioner. Para fazer isso, verifique se o Astra Trident não está instalado e se o Astra Control Provisioner não está ativado no cluster que você deseja gerenciar com o Astra Control Service. Nesse caso, o Astra Control Service habilita automaticamente o Astra Control Provisioner quando você começar a gerenciar o cluster, e as atualizações do Astra Control Provisioner são tratadas automaticamente.
+* Você mesmo pode gerenciar o ciclo de vida do Astra Control Provisioner. Para fazer isso, ative o Astra Control Provisioner no cluster antes de gerenciar o cluster com o Astra Control Service. Nesse caso, o Astra Control Service deteta que o Astra Control Provisioner já está ativado e não o reinstala nem gerencia atualizações do Astra Control Provisioner. link:../use/enable-acp.html["Habilite o Astra Control Provisioner"^]Consulte para obter os passos Ativar Astra Control Provisioner.
+
+
+Ao gerenciar clusters do Amazon Web Services com Astra Control Service, se você precisar de back-ends de storage que só podem ser usados com o Astra Control Provisioner, será necessário habilitar o Astra Control Provisioner manualmente no cluster antes de gerenciá-lo com o Astra Control Service. link:../use/enable-acp.html["Habilite o Astra Control Provisioner"^]Consulte para obter informações sobre os passos para ativar o Astra Control Provisioner.
+
+.Antes de começar
+[%collapsible%open]
+====
+ifdef::aws[]
+
+.Amazon Web Services
+* Você deve ter o arquivo JSON contendo as credenciais do usuário do IAM que criou o cluster. link:../get-started/set-up-amazon-web-services.html#create-an-iam-user["Saiba como criar um usuário do IAM"].
+* O parceiro é necessário para o Amazon FSX for NetApp ONTAP. Se você planeja usar o Amazon FSX for NetApp ONTAP como um back-end de armazenamento para seu cluster EKS, consulte as informações do Supervisor de Controle Astra no link:set-up-amazon-web-services.html#eks-cluster-requirements["Requisitos do cluster do EKS"].
+* (Opcional) se você precisar fornecer `kubectl` acesso a comandos para um cluster a outros usuários do IAM que não sejam o criador do cluster, consulte as instruções no https://aws.amazon.com/premiumsupport/knowledge-center/amazon-eks-cluster-access/["Como posso fornecer acesso a outros usuários e funções do IAM após a criação do cluster no Amazon EKS?"^].
+* Se você planeja usar o NetApp Cloud Volumes ONTAP como um back-end de storage, precisa configurar o Cloud Volumes ONTAP para trabalhar com o Amazon Web Services. Consulte o Cloud Volumes ONTAP https://docs.netapp.com/us-en/cloud-manager-cloud-volumes-ontap/task-getting-started-aws.html["documentação de configuração"^] .
+
+
+endif::aws[]
+
+ifdef::azure[]
+
+.Microsoft Azure
+* Você deve ter o arquivo JSON que contém a saída da CLI do Azure quando você criou o principal de serviço. link:../get-started/set-up-microsoft-azure-with-anf.html#create-an-azure-service-principal-2["Saiba como configurar um diretor de serviço"].
++
+Você também precisará do ID de assinatura do Azure, se não o tiver adicionado ao arquivo JSON.
+
+
+
+* Se você planeja usar o NetApp Cloud Volumes ONTAP como um back-end de storage, precisa configurar o Cloud Volumes ONTAP para trabalhar com o Microsoft Azure. Consulte o Cloud Volumes ONTAP https://docs.netapp.com/us-en/cloud-manager-cloud-volumes-ontap/task-getting-started-azure.html["documentação de configuração"^] .
+
+
+endif::azure[]
+
+ifdef::gcp[]
+
+.Google Cloud
+* Você deve ter o arquivo de chave da conta de serviço para uma conta de serviço que tenha as permissões necessárias. link:../get-started/set-up-google-cloud.html#create-a-service-account["Saiba como configurar uma conta de serviço"].
+* Se o cluster for privado, o deve permitir o endereço IP do https://cloud.google.com/kubernetes-engine/docs/concepts/private-cluster-concept["redes autorizadas"^] Astra Control Service:
++
+52.188.218.166/32
+
+* Se você planeja usar o NetApp Cloud Volumes ONTAP como um back-end de storage, precisa configurar o Cloud Volumes ONTAP para trabalhar com o Google Cloud. Consulte o Cloud Volumes ONTAP https://docs.netapp.com/us-en/cloud-manager-cloud-volumes-ontap/task-getting-started-gcp.html["documentação de configuração"^] .
+
+
+endif::gcp[]
+
+====
+.Passos
+. (Opcional) se você estiver adicionando um cluster do Amazon EKS ou quiser gerenciar a instalação e atualizações do Astra Control Provisioner você mesmo, ative o Astra Control Provisioner no cluster. link:../use/enable-acp.html["Habilite o Astra Control Provisioner"^]Consulte para obter os passos de capacitação.
+. Abra a IU da Web do Astra Control Service em um navegador.
+. No Painel, selecione *Gerenciar cluster do Kubernetes*.
++
+Siga as instruções para adicionar o cluster.
+
+. *Provedor*: Selecione seu provedor de nuvem e forneça as credenciais necessárias para criar uma nova instância de nuvem ou selecione uma instância de nuvem existente para usar.
+
+
+ifdef::aws[]
+
+. *Amazon Web Services*: Forneça detalhes sobre sua conta de usuário do Amazon Web Services IAM ao carregar um arquivo JSON ou colando o conteúdo desse arquivo JSON da área de transferência.
++
+O arquivo JSON deve conter as credenciais do usuário do IAM que criou o cluster.
+
+
+
+endif::aws[]
+
+ifdef::azure[]
+
+. *Microsoft Azure*: Forneça detalhes sobre o seu principal de serviço do Azure carregando um arquivo JSON ou colando o conteúdo desse arquivo JSON da sua área de transferência.
++
+O arquivo JSON deve conter a saída da CLI do Azure quando você criou o principal do serviço. Ele também pode incluir seu ID de assinatura para que ele seja adicionado automaticamente ao Astra. Caso contrário, você precisa inserir manualmente o ID após fornecer o JSON.
+
+
+
+endif::azure[]
+
+ifdef::gcp[]
+
+. *Google Cloud Platform*: Forneça o arquivo chave da conta de serviço, seja carregando o arquivo ou colando o conteúdo da área de transferência.
++
+O Astra Control Service usa a conta de serviço para descobrir clusters executados no Google Kubernetes Engine.
+
+
+
+endif::gcp[]
+
+. *Other*: Esta guia é para uso somente com clusters autogerenciados.
++
+.. *Nome da instância da nuvem*: Forneça um nome para a nova instância da nuvem que será criada quando você adicionar esse cluster. Saiba mais link:../use/manage-cloud-instances.html["instâncias da nuvem"]sobre o .
+.. Selecione *seguinte*.
++
+O Astra Control Service exibe uma lista de clusters que você pode escolher.
+
+.. *Cluster*: Selecione um cluster na lista para adicionar ao Astra Control Service.
++
+
+NOTE: Quando estiver selecionando a partir da lista de clusters, preste atenção à coluna *eligiblity*. Se um cluster for "inelegível" ou "parcialmente elegível", passe o Mouse sobre o status para determinar se há um problema com o cluster. Por exemplo, pode identificar que o cluster não tem um nó de trabalho.
+
+
+
+
+
+. Selecione *seguinte*.
+. (Opcional) *Storage*: Opcionalmente, selecione a classe de armazenamento que você deseja que os aplicativos do Kubernetes implantados nesse cluster usem por padrão.
++
+.. Para selecionar uma nova classe de armazenamento padrão para o cluster, ative a caixa de seleção *Assign a new default storage class* (atribuir uma nova classe de armazenamento padrão).
+.. Selecione uma nova classe de armazenamento padrão na lista.
++
+[NOTE]
+====
+Cada serviço de storage de fornecedor de nuvem exibe as seguintes informações de preço, performance e resiliência:
+
+ifdef::gcp[]
+
+*** Cloud Volumes Service para Google Cloud: Informações de preço, performance e resiliência
+*** Persistent Disk do Google: Nenhuma informação de preço, performance ou resiliência disponível
+
+
+endif::gcp[]
+
+ifdef::azure[]
+
+*** Azure NetApp Files: Informações de performance e resiliência
+*** Discos gerenciados do Azure: Nenhuma informação de preço, desempenho ou resiliência disponível
+
+
+endif::azure[]
+
+ifdef::aws[]
+
+*** Amazon Elastic Block Store: Sem informações de preço, desempenho ou resiliência disponíveis
+*** Amazon FSX for NetApp ONTAP: Sem informações de preço, desempenho ou resiliência disponíveis
+
+
+endif::aws[]
+
+*** NetApp Cloud Volumes ONTAP: Sem informações de preço, performance ou resiliência disponíveis
+
+
+====
++
+Cada classe de storage pode utilizar um dos seguintes serviços:
+
+
+
+
+
+ifdef::gcp[]
+
+* https://cloud.netapp.com/cloud-volumes-service-for-gcp["Cloud Volumes Service para Google Cloud"^]
+* https://cloud.google.com/persistent-disk/["Persistent Disk do Google"^]
+
+
+endif::gcp[]
+
+ifdef::azure[]
+
+* https://cloud.netapp.com/azure-netapp-files["Azure NetApp Files"^]
+* https://docs.microsoft.com/en-us/azure/virtual-machines/managed-disks-overview["Discos gerenciados do Azure"^]
+
+
+endif::azure[]
+
+ifdef::aws[]
+
+* https://docs.aws.amazon.com/ebs/["Amazon Elastic Block Store"^]
+* https://docs.aws.amazon.com/fsx/latest/ONTAPGuide/what-is-fsx-ontap.html["Amazon FSX para NetApp ONTAP"^]
+
+
+endif::aws[]
+
+* https://www.netapp.com/cloud-services/cloud-volumes-ontap/what-is-cloud-volumes/["NetApp Cloud Volumes ONTAP"^]
++
+Saiba mais link:../learn/aws-storage.html["Classes de armazenamento para clusters do Amazon Web Services"]sobre o . Saiba mais link:../learn/azure-storage.html["Classes de armazenamento para clusters AKS"]sobre o . Saiba mais link:../learn/choose-class-and-size.html["Classes de armazenamento para clusters GKE"]sobre o .
+
++
+.. Selecione *seguinte*.
+.. *Review & Approve*: Reveja os detalhes de configuração.
+.. Selecione *Adicionar* para adicionar o cluster ao Astra Control Service.
+
+
+
+
+.Resultado
+Se este for o primeiro cluster adicionado a esse fornecedor de nuvem, o Astra Control Service criará um armazenamento de objetos para o fornecedor de nuvem para backups de aplicações executadas em clusters qualificados. (Quando você adiciona clusters subsequentes para esse fornecedor de nuvem, não são criados armazenamentos de objetos adicionais.) Se você especificou uma classe de storage padrão, o Astra Control Service define a classe de storage padrão especificada. Para clusters gerenciados na Amazon Web Services ou no Google Cloud Platform, o Astra Control Service também cria uma conta de administrador no cluster. Essas ações podem levar vários minutos.
+
+
+
+== Altere a classe de armazenamento padrão
+
+Você pode alterar a classe de armazenamento padrão para um cluster.
+
+
+
+=== Altere a classe de storage padrão usando o Astra Control
+
+Você pode alterar a classe de storage padrão de um cluster a partir do Astra Control. Se o cluster usar um serviço de back-end de armazenamento instalado anteriormente, talvez você não consiga usar esse método para alterar a classe de armazenamento padrão (a ação *Definir como padrão* não é selecionável). Neste caso, você pode <<Altere a classe de armazenamento padrão usando a linha de comando>>.
+
+.Passos
+. Na IU do Astra Control Service, selecione *clusters*.
+. Na página *clusters*, selecione o cluster que deseja alterar.
+. Selecione a guia *armazenamento*.
+. Selecione a categoria *Storage classes*.
+. Selecione o menu *ações* para a classe de armazenamento que você deseja definir como padrão.
+. Selecione *Definir como padrão*.
+
+
+
+
+=== Altere a classe de armazenamento padrão usando a linha de comando
+
+Você pode alterar a classe de storage padrão de um cluster usando comandos do Kubernetes. Esse método funciona independentemente da configuração do cluster.
+
+.Passos
+. Faça login no cluster do Kubernetes.
+. Liste as classes de armazenamento no cluster:
++
+[source, console]
+----
+kubectl get storageclass
+----
+. Remova a designação padrão da classe de armazenamento padrão. Substitua o <SC_NAME> pelo nome da classe de armazenamento:
++
+[source, console]
+----
+kubectl patch storageclass <SC_NAME> -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
+----
+. Marque uma classe de armazenamento diferente como padrão. Substitua o <SC_NAME> pelo nome da classe de armazenamento:
++
+[source, console]
+----
+kubectl patch storageclass <SC_NAME> -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+----
+. Confirme a nova classe de armazenamento padrão:
++
+[source, console]
+----
+kubectl get storageclass
+----
+
+
+ifdef::azure[]

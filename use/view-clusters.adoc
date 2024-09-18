@@ -1,0 +1,34 @@
+---
+sidebar: sidebar 
+permalink: use/view-clusters.html 
+keywords: view cluster, cluster storage, cluster overview 
+summary: Depois de adicionar clusters do Kubernetes ao Astra Control, você poderá ver detalhes sobre o cluster, como localização, nós de trabalho, volumes persistentes e classes de storage. 
+---
+= Ver a integridade e os detalhes dos clusters
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/use/
+
+
+[role="lead"]
+Depois de adicionar clusters do Kubernetes ao Astra Control, você poderá ver detalhes sobre o cluster, como localização, nós de trabalho, volumes persistentes e classes de storage.
+
+.Passos
+. Na IU do Astra Control Service, selecione *clusters*.
+. Na página *clusters*, selecione o cluster cujos detalhes deseja exibir.
++
+
+NOTE: Se um cluster ainda estiver `removed` no estado de cluster e a conetividade de rede parecer saudável (tentativas externas de acessar o cluster usando APIs do Kubernetes são bem-sucedidas), o kubeconfig que você forneceu ao Astra Control pode não ser mais válido. Isto pode dever-se à rotação ou expiração do certificado no cluster. Para corrigir esse problema, atualize as credenciais associadas ao cluster no Astra Control usando o link:https://docs.netapp.com/us-en/astra-automation/index.html["API Astra Control"].
+
+. Veja as informações nas guias *Visão geral*, *armazenamento* e *atividade* para encontrar as informações que você está procurando.
++
+** *Visão geral*: Detalhes sobre os nós de trabalho, incluindo seu estado.
+** *Storage*: Os volumes persistentes associados à computação, incluindo a classe de armazenamento e o estado.
+** *Actividade*: As atividades relacionadas com o cluster.
+
+
+
+
+
+NOTE: Você também pode exibir informações de cluster a partir do Astra Control Service *Dashboard*. Na guia *clusters* em *Resumo de recursos*, você pode selecionar os clusters gerenciados, que o levam à página *clusters*. Depois de acessar a página *clusters*, siga as etapas descritas acima.

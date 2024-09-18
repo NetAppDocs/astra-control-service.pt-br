@@ -1,0 +1,74 @@
+---
+sidebar: sidebar 
+permalink: use/manage-roles.html 
+keywords: users, roles, user roles, namespace, namespaces, account, accounts, permissions, restriction, restrict, constraint, constraints 
+summary: Saiba como gerenciar funções de usuário adicionando uma restrição à função. 
+---
+= Gerenciar funções
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/use/
+
+
+[role="lead"]
+Você pode gerenciar funções adicionando restrições de namespace e restringindo funções de usuário a essas restrições. Isso permite que você controle o acesso a recursos dentro de sua organização. Você pode usar a IU do Astra Control ou https://docs.netapp.com/us-en/astra-automation/index.html["API Astra Control"^] gerenciar funções.
+
+
+
+== Adicione uma restrição de namespace a uma função
+
+Um usuário Admin ou proprietário pode adicionar restrições de namespace.
+
+.Passos
+. Na área de navegação *Gerenciar sua conta*, selecione *conta*.
+. Selecione a guia *usuários*.
+. Na coluna *ações*, selecione o botão de menu para um usuário com a função Membro ou Visualizador.
+. Selecione *Editar função*.
+. Ative a caixa de verificação *restringir função a restrições*.
++
+A caixa de verificação só está disponível para funções Membro ou Visualizador. Você pode selecionar uma função diferente na lista suspensa *Role*.
+
+. Selecione *Adicionar restrição*.
++
+Você pode ver a lista de restrições disponíveis por namespace ou por rótulo de namespace.
+
+. Na lista suspensa *tipo de restrição*, selecione *namespace do Kubernetes* ou *rótulo do namespace do Kubernetes* dependendo de como seus namespaces são configurados.
+. Selecione um ou mais namespaces ou rótulos da lista para compor uma restrição que restrinja funções a esses namespaces.
+. Selecione *Confirm*.
++
+A página *Editar função* exibe a lista de restrições que você escolheu para essa função.
+
+. Selecione *Confirm*.
++
+Na página *conta*, você pode visualizar as restrições para qualquer função de Membro ou Visualizador na coluna *função*.
+
+
+
+
+NOTE: Se você habilitar restrições para uma função e selecionar *Confirm* sem adicionar nenhuma restrição, a função será considerada como tendo restrições completas (a função é negada acesso a quaisquer recursos atribuídos a namespaces).
+
+
+
+== Remova uma restrição de namespace de uma função
+
+Um usuário Admin ou proprietário pode remover uma restrição de namespace de uma função.
+
+.Passos
+. Na área de navegação *Gerenciar sua conta*, selecione *conta*.
+. Selecione a guia *usuários*.
+. Na coluna *ações*, selecione o botão de menu para um usuário com a função Membro ou Visualizador que tem restrições ativas.
+. Selecione *Editar função*.
++
+A caixa de diálogo *Editar função* exibe as restrições ativas para a função.
+
+. Selecione *X* à direita da restrição que você precisa remover.
+. Selecione *Confirm*.
+
+
+
+
+== Para mais informações
+
+* link:../learn/user-roles-namespaces.html["Funções de usuário e namespaces"]
+

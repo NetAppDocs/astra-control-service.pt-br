@@ -1,0 +1,232 @@
+---
+sidebar: sidebar 
+permalink: get-started/set-up-microsoft-azure-with-amd.html 
+keywords: azure, azure netapp files, register, create account, create netapp account, azure subscription, azure permissions, service principal, create service principal, set up azure permissions, set up service principal, setup service principal, setup azure permissions, permissions, create capacity pool, setup capacity pool, set up capacity pool, kubernetes cluster, cluster requirements, version requirements, supported versions, supported regions, azure regions, kubernetes version, linux, image type, networking 
+summary: Algumas etapas são necessárias para preparar sua assinatura do Microsoft Azure antes que você possa gerenciar os clusters do Azure Kubernetes Service com o Astra Control Service. 
+---
+= Configurar o Microsoft Azure com discos gerenciados do Azure
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/get-started/
+
+
+[role="lead"]
+Algumas etapas são necessárias para preparar sua assinatura do Microsoft Azure antes que você possa gerenciar os clusters do Azure Kubernetes Service com o Astra Control Service. Siga estas instruções se você planeja usar os discos gerenciados do Azure como um back-end de storage.
+
+
+
+== Início rápido para configurar o Azure
+
+Comece rapidamente seguindo estas etapas ou role para baixo até as seções restantes para obter detalhes completos.
+
+
+
+=== image:https://raw.githubusercontent.com/NetAppDocs/common/main/media/number-1.png["Um"] Analisar os requisitos do Astra Control Service para Azure Kubernetes Service
+
+[role="quick-margin-para"]
+Garantir que os clusters estejam íntegros e executando uma versão compatível do Kubernetes, que os pools de nós estejam online, executando Linux e muito mais. <<Requisitos de cluster do Azure Kubernetes Service,Saiba mais sobre este passo>>.
+
+
+
+=== image:https://raw.githubusercontent.com/NetAppDocs/common/main/media/number-2.png["Dois"] Inscreva-se no Microsoft Azure
+
+[role="quick-margin-para"]
+Crie uma conta do Microsoft Azure. <<Inscreva-se no Microsoft Azure,Saiba mais sobre este passo>>.
+
+
+
+=== image:https://raw.githubusercontent.com/NetAppDocs/common/main/media/number-3.png["Três"] Crie um diretor de serviço do Azure
+
+[role="quick-margin-para"]
+Crie um diretor de serviço do Azure que tenha a função Colaborador. <<Crie um diretor de serviço do Azure,Saiba mais sobre este passo>>.
+
+
+
+=== image:https://raw.githubusercontent.com/NetAppDocs/common/main/media/number-4.png["Quatro"] Configure os detalhes do driver da Container Storage Interface (CSI)
+
+[role="quick-margin-para"]
+Você precisa configurar sua assinatura do Azure e o cluster para trabalhar com os drivers CSI. <<Configure os detalhes do driver da Container Storage Interface (CSI),Saiba mais sobre este passo>>.
+
+
+
+=== image:https://raw.githubusercontent.com/NetAppDocs/common/main/media/number-5.png["Cinco"] Opcional: Configurar redundância para buckets de backup do Azure
+
+[role="quick-margin-para"]
+Por padrão, os buckets que o Astra Control Service usa para armazenar backups do Serviço Kubernetes do Azure usam a opção de redundância LRS (armazenamento redundante local). Como etapa opcional, você pode configurar um nível mais durável de redundância para buckets do Azure. <<Opcional: Configurar redundância para buckets de backup do Azure,Saiba mais sobre este passo>>.
+
+
+
+== Requisitos de cluster do Azure Kubernetes Service
+
+Um cluster de Kubernetes precisa atender aos requisitos a seguir para que você possa descobri-lo e gerenciá-lo no Astra Control Service.
+
+Versão do Kubernetes:: Os clusters precisam estar executando o Kubernetes das versões 1,26 a 1,28.
+Tipo de imagem:: O tipo de imagem para todos os pools de nós deve ser Linux.
+Estado do cluster:: Os clusters devem estar em execução em um estado saudável e ter pelo menos um nó de trabalho on-line sem nós de trabalho em um estado com falha.
+Região do Azure:: Como prática recomendada, você deve escolher uma região compatível com Azure NetApp Files, mesmo que não a use como back-end de storage. Isso facilita o uso do Azure NetApp Files como um back-end de storage no futuro, se os requisitos de performance mudarem. https://azure.microsoft.com/en-us/global-infrastructure/services/?products=netapp["Veja os produtos Azure por região"^].
+
+
+Controladores CSI:: Os clusters devem ter os drivers CSI apropriados instalados.
+
+
+
+
+== Inscreva-se no Microsoft Azure
+
+Se você não tiver uma conta do Microsoft Azure, comece por se inscrever no Microsoft Azure.
+
+.Passos
+. Aceda a https://azure.microsoft.com/en-us/free/["Página de subscrição do Azure"^] para subscrever o serviço Azure.
+. Selecione um plano e siga as instruções para concluir a assinatura.
+
+
+
+
+== Crie um diretor de serviço do Azure
+
+O Astra Control Service requer um diretor de serviço do Azure que é atribuído à função Colaborador. O Astra Control Service usa este princípio de serviço para facilitar o gerenciamento de dados da aplicação Kubernetes em seu nome.
+
+Um responsável de serviço é uma identidade criada especificamente para uso com aplicativos, serviços e ferramentas. A atribuição de uma função ao responsável do serviço restringe o acesso a recursos específicos do Azure.
+
+Siga as etapas abaixo para criar um princípio de serviço usando a CLI do Azure. Você precisará salvar a saída em um arquivo JSON e fornecê-la ao Astra Control Service mais tarde. https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli["Consulte a documentação do Azure para obter mais detalhes sobre como usar a CLI"^].
+
+As etapas a seguir assumem que você tem permissão para criar um responsável de serviço e que você tem o Microsoft Azure SDK (comando az) instalado em sua máquina.
+
+.Requisitos
+* O responsável pelo serviço deve usar autenticação regular. Os certificados não são suportados.
+* O responsável do serviço deve ter acesso ao Colaborador ou proprietário à sua subscrição do Azure.
+* A subscrição ou o grupo de recursos que escolher para o âmbito tem de conter os clusters AKS e a sua conta Azure NetApp Files.
+
+
+.Passos
+. Identificar a ID da subscrição e do locatário em que residem os clusters do AKS (estes são os clusters que pretende gerir no Astra Control Service).
++
+[source, azureCLI]
+----
+az configure --list-defaults
+az account list --output table
+----
+. Siga um destes procedimentos, dependendo se você usar uma assinatura inteira ou um grupo de recursos:
++
+** Crie o responsável do serviço, atribua a função Colaborador e especifique o escopo para toda a assinatura onde os clusters residem.
++
+[source, azurecli]
+----
+az ad sp create-for-rbac --name service-principal-name --role contributor --scopes /subscriptions/SUBSCRIPTION-ID
+----
+** Crie o principal de serviço, atribua a função Colaborador e especifique o grupo de recursos onde os clusters residem.
++
+[source, azurecli]
+----
+az ad sp create-for-rbac --name service-principal-name --role contributor --scopes /subscriptions/SUBSCRIPTION-ID/resourceGroups/RESOURCE-GROUP-ID
+----
+
+
+. Armazene a saída resultante da CLI do Azure como um arquivo JSON.
++
+Você precisará fornecer esse arquivo para que o Astra Control Service possa descobrir seus clusters AKS e gerenciar operações de gerenciamento de dados do Kubernetes. link:../use/manage-credentials.html["Saiba mais sobre como gerenciar credenciais no Astra Control Service"].
+
+. Opcional: Adicione o ID da assinatura ao arquivo JSON para que o Astra Control Service preencha automaticamente o ID quando você selecionar o arquivo.
++
+Caso contrário, você precisará inserir o ID da assinatura no Astra Control Service quando solicitado.
+
++
+*Exemplo*
+
++
+[source, JSON]
+----
+{
+  "appId": "0db3929a-bfb0-4c93-baee-aaf8",
+  "displayName": "sp-example-dev-sandbox",
+  "name": "http://sp-example-dev-sandbox",
+  "password": "mypassword",
+  "tenant": "011cdf6c-7512-4805-aaf8-7721afd8ca37",
+  "subscriptionId": "99ce999a-8c99-99d9-a9d9-99cce99f99ad"
+}
+----
+. Opcional: Teste seu principal de serviço. Escolha entre os seguintes comandos de exemplo, dependendo do escopo que o seu responsável de serviço usa.
++
+.Escopo da assinatura
+[source, azurecli]
+----
+az login --service-principal --username APP-ID-SERVICEPRINCIPAL --password PASSWORD --tenant TENANT-ID
+az group list --subscription SUBSCRIPTION-ID
+az aks list --subscription SUBSCRIPTION-ID
+az storage container list --account-name STORAGE-ACCOUNT-NAME
+----
++
+.Escopo do grupo de recursos
+[source, azurecli]
+----
+az login --service-principal --username APP-ID-SERVICEPRINCIPAL --password PASSWORD --tenant TENANT-ID
+az aks list --subscription SUBSCRIPTION-ID --resource-group RESOURCE-GROUP-ID
+----
+
+
+
+
+== Configure os detalhes do driver da Container Storage Interface (CSI)
+
+Para usar discos gerenciados do Azure com o Astra Control Service, você precisará instalar os drivers CSI necessários.
+
+
+
+=== Ative o recurso de driver CSI na sua assinatura do Azure
+
+Antes de instalar os drivers CSI, você precisa ativar o recurso de driver CSI na sua assinatura do Azure.
+
+.Passos
+. Abra a interface da linha de comando do Azure.
+. Execute o seguinte comando para Registrar o driver:
++
+[source, console]
+----
+az feature register --namespace "Microsoft.ContainerService" --name "EnableAzureDiskFileCSIDriver"
+----
+. Execute o seguinte comando para garantir que a alteração seja propagada:
++
+[source, console]
+----
+az provider register -n Microsoft.ContainerService
+----
++
+Você deve ver saída semelhante ao seguinte:
+
+
+
+[listing]
+----
+{
+"id": "/subscriptions/b200155f-001a-43be-87be-3edde83acef4/providers/Microsoft.Features/providers/Microsoft.ContainerService/features/EnableAzureDiskFileCSIDriver",
+"name": "Microsoft.ContainerService/EnableAzureDiskFileCSIDriver",
+"properties": {
+   "state": "Registering"
+},
+"type": "Microsoft.Features/providers/features"
+}
+----
+
+
+=== Instale os drivers de CSI de disco gerenciado do Azure no cluster do Azure Kubernetes Service
+
+Você pode instalar os drivers do Azure CSI para concluir sua preparação.
+
+.Passo
+. Vá para https://docs.microsoft.com/en-us/azure/aks/csi-storage-drivers["A documentação do driver do Microsoft CSI"^].
+. Siga as instruções para instalar os drivers CSI necessários.
+
+
+
+
+== Opcional: Configurar redundância para buckets de backup do Azure
+
+Você pode configurar um nível de redundância mais durável para buckets de backup do Azure. Por padrão, os buckets que o Astra Control Service usa para armazenar backups do Serviço Kubernetes do Azure usam a opção de redundância LRS (armazenamento redundante local). Para usar uma opção de redundância mais durável para buckets do Azure, você precisa fazer o seguinte:
+
+.Passos
+. Crie uma conta de armazenamento do Azure que use o nível de redundância necessário usando https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal["estas instruções"^]o .
+. Crie um contentor do Azure na nova conta de armazenamento usando https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal["estas instruções"^]o .
+. Adicione o contêiner como um bucket ao Astra Control Service. link:../use/manage-buckets.html#add-an-additional-bucket["Adicione um balde adicional"]Consulte a .
+. (Opcional) para usar o bucket recém-criado como o bucket padrão para backups do Azure, defina-o como o bucket padrão para o Azure. link:../use/manage-buckets.html#change-the-default-bucket["Altere o intervalo predefinido"]Consulte a .
+

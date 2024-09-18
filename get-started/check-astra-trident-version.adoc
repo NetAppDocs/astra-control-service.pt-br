@@ -1,0 +1,68 @@
+---
+sidebar: sidebar 
+permalink: get-started/check-astra-trident-version.html 
+keywords: astra trident, check, version, astra control provisioner 
+summary: Para clusters autogerenciados, talvez seja necessário ter certeza de que está usando a versão correta do Astra Trident. 
+---
+= Verifique a versão Astra Trident
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/get-started/
+
+
+[role="lead"]
+Para adicionar um cluster autogerenciado que utilize o Astra Control Provisioner ou o Astra Trident para serviços de storage, certifique-se de que a versão instalada do Astra Trident seja a 23,10 ou a mais recente.
+
+.Passos
+. Determine a versão do Astra Trident que você está executando:
++
+[source, console]
+----
+kubectl get tridentversions -n trident
+----
++
+Se o Astra Trident estiver instalado, você verá uma saída semelhante à seguinte:
+
++
+[listing]
+----
+NAME      VERSION
+trident   24.02.0
+----
++
+Se o Astra Trident não estiver instalado, você verá uma saída semelhante à seguinte:
+
++
+[listing]
+----
+error: the server doesn't have a resource type "tridentversions"
+----
+. Execute um dos seguintes procedimentos:
++
+** Se você estiver executando o Astra Trident 23,01 ou anterior, use-os https://docs.netapp.com/us-en/trident/trident-managing-k8s/upgrade-trident.html["instruções"^] para atualizar para uma versão mais recente do Astra Trident antes de atualizar para o Astra Control Provisioner. Você pode link:../use/enable-acp.html["faça uma atualização direta"] usar o Astra Control Provisioner 24,02 se o seu Astra Trident estiver dentro de uma janela de quatro versões da versão 24,02. Por exemplo, você pode fazer o upgrade diretamente do Astra Trident 23,04 para o Astra Control Provisioner 24,02.
+** Se você estiver executando o Astra Trident 23,10 ou posterior, verifique se o Astra Control Provisioner foi link:../use/faq.html#running-acp-check["ativado"]. O Astra Control Provisioner não funcionará com versões do Astra Control Center anteriores a 23,10. link:../get-started/enable-acp.html["Atualize seu Astra Control Provisioner"] Para que ele tenha a mesma versão do Astra Control Center que você está atualizando para acessar as funcionalidades mais recentes.
+
+
+. Certifique-se de que os pods estão em execução:
++
+[source, console]
+----
+kubectl get pods -n trident
+----
+. Verifique se as classes de storage estão usando os drivers Astra Trident compatíveis. O nome do provisionador deve ser `csi.trident.netapp.io`. Consulte o seguinte exemplo:
++
+[source, console]
+----
+kubectl get sc
+----
++
+Resposta da amostra:
+
++
+[listing]
+----
+NAME                   PROVISIONER                    RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+ontap-gold (default)   csi.trident.netapp.io          Delete          Immediate           true                   5d23h
+----
+

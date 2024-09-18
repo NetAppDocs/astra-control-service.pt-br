@@ -1,0 +1,202 @@
+---
+sidebar: sidebar 
+permalink: use/set-up-billing.html 
+keywords: billing, set up billing, payments, set up payments, credit card, update credit card, change credit card, free plan, free trial, premium, premium plan 
+summary: O Astra Control Service fornece duas maneiras de cobrança para seus namespaces. O Plano Gratuito permite que você gerencie até 10 aplicativos em sua conta. Se você quiser gerenciar mais de 10 namespaces, então você precisará configurar o faturamento atualizando do Plano Gratuito para o Plano Premium. Você também pode gerenciar a cobrança do Azure ou da AWS por meio do marketplace do Azure ou da AWS. 
+---
+= Configure a faturação
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/use/
+
+
+[role="lead"]
+Você pode usar mais de um método para gerenciar a cobrança da conta do Astra Control Service. Se você estiver usando o Azure ou o Amazon AWS, poderá se inscrever em um plano do Astra Control Service por meio do Microsoft Azure Marketplace ou do AWS Marketplace. Quando você faz isso, você pode gerenciar seus detalhes de faturamento através do Marketplace. Ou, você pode se inscrever diretamente no NetApp. Se você se inscrever diretamente no NetApp, poderá gerenciar seus detalhes de cobrança por meio do Serviço Astra Control. Se você usar o Serviço Astra Control sem uma assinatura, você será automaticamente inscrito no Plano Gratuito.
+
+O Plano Astra Control Service Free permite gerenciar até 10 namespaces em sua conta. Se você quiser gerenciar mais de 10 namespaces, precisará configurar o faturamento atualizando do Plano Gratuito para o Plano Premium ou inscreva-se no Azure Marketplace ou no AWS Marketplace.
+
+
+
+== Visão geral de faturamento
+
+Há dois tipos de custos associados ao uso do serviço Astra Control: Cobranças da NetApp pelo serviço Astra Control e cobranças do seu fornecedor de nuvem por volumes persistentes e storage de objetos.
+
+
+
+=== Cobrança do Astra Control Service
+
+O Astra Control Service oferece três planos:
+
+Plano grátis:: Gerencie até 10 namespaces gratuitamente.
+PayGo Premium:: Gerencie uma quantidade ilimitada de namespaces em uma taxa específica, por namespace.
+Subscrição Premium:: Pré-pague a uma taxa com desconto com uma assinatura anual que permite gerenciar até 20 namespaces por pacote _namespace_. Entre em Contato com as vendas da NetApp para comprar quantos pacotes forem necessários para sua organização. Por exemplo, compre 3 pacotes para gerenciar 60 namespaces do Astra Control Service. Se você gerenciar mais namespaces do que o permitido pela sua assinatura anual, então você será cobrado pela taxa de sobrecarga dependente da assinatura por namespace extra. Se você ainda não tem uma conta Astra Control, comprar a assinatura Premium cria automaticamente uma conta Astra Control para você. Se você tiver um Plano Gratuito existente, então você será convertido automaticamente para a assinatura Premium.
+
+
+Quando você cria uma conta Astra Control, você é automaticamente inscrito no Plano Gratuito. O Dashboard do Astra Control mostra quantos namespaces você está gerenciando atualmente dos 10 namespaces gratuitos que você tem permissão. O faturamento começa para um namespace quando o primeiro aplicativo que contém o namespace é gerenciado e pára para esse namespace quando o último aplicativo que contém o namespace não é gerenciado.
+
+Se você tentar gerenciar um namespace 11th, o Astra Control notifica você de que você atingiu o limite do Plano livre. Em seguida, ele solicita que você atualize do Plano Gratuito para um Plano Premium. Você será cobrado de acordo com a taxa de sobrecarga dependente da assinatura por namespace extra.
+
+Você pode fazer upgrade para um Plano Premium a qualquer momento. Depois de atualizar, o Astra Control começa a cobrar por _todos_ namespaces na conta. Os primeiros 10 namespaces não ficam no Plano livre.
+
+ifdef::gcp[]
+
+
+
+=== Cobrança do Google Cloud
+
+Os volumes persistentes são suportados pelo NetApp Cloud Volumes Service e os backups de suas aplicações são armazenados em um bucket do Google Cloud Storage.
+
+* https://cloud.google.com/solutions/partners/netapp-cloud-volumes/costs["Ver detalhes de preços para Cloud Volumes Service"^].
++
+Observe que o Astra Control Service é compatível com todos os tipos de serviço e níveis de serviço. O tipo de serviço que você usa depende do https://cloud.netapp.com/cloud-volumes-global-regions#cvsGcp["Região do Google Cloud"^].
+
+* https://cloud.google.com/storage/pricing["Ver detalhes de preços dos buckets de storage do Google Cloud"^].
+
+
+endif::gcp[]
+
+ifdef::azure[]
+
+
+
+=== Faturamento do Microsoft Azure
+
+Volumes persistentes são suportados pelo Azure NetApp Files e os backups de suas aplicações são armazenados em um contêiner de Blob do Azure.
+
+* https://azure.microsoft.com/en-us/pricing/details/netapp["Ver detalhes de preços para Azure NetApp Files"^].
+* https://azure.microsoft.com/en-us/pricing/details/storage/blobs["Ver detalhes de preços para o armazenamento de Blobs do Microsoft Azure"^].
+* https://azuremarketplace.microsoft.com/en-us/marketplace/apps/netapp.netapp-astra-acs?tab=PlansAndPrice["Veja os planos e preços do Astra Control Service no Azure Marketplace"]
+
+
+
+NOTE: A taxa de faturamento do Azure para o Serviço Astra Control é por hora e uma nova hora de faturamento começa após 29 minutos da hora de uso.
+
+endif::azure[]
+
+ifdef::aws[]
+
+
+
+=== Cobrança do Amazon Web Services
+
+Volumes persistentes são suportados pelo EBS ou FSX for NetApp ONTAP e os backups de seus aplicativos são armazenados em um bucket da AWS.
+
+* https://aws.amazon.com/eks/pricing/["Exibir detalhes de preços do Amazon Web Services"^].
+
+
+endif::aws[]
+
+
+
+== Inscreva-se no Astra Control Service no Azure Marketplace
+
+Você pode se inscrever no Astra Control Service usando o Azure Marketplace. Sua conta e detalhes de faturamento são gerenciados pelo Marketplace.
+
+
+NOTE: Para ver um passo a passo em vídeo do processo de subscrição do Azure Marketplace, visite https://media.netapp.com/video-detail/1bf9c3db-2b60-520d-bde6-b8996e7301f0/subscribing-to-the-astra-control-service-from-microsoft-azure-marketplace["NetApp TV"^].
+
+.Passos
+. Vá para https://azuremarketplace.microsoft.com/en-us/marketplace/apps/netapp.netapp-astra-acs?tab=Overview["Azure Marketplace"^] .
+. Selecione *Obtenha-o agora*.
+. Siga as instruções para assinar um plano.
+
+
+
+
+== Inscreva-se no Astra Control Service no AWS Marketplace
+
+Você pode se inscrever no Astra Control Service usando o AWS Marketplace. Sua conta e detalhes de faturamento são gerenciados pelo Marketplace.
+
+.Passos
+. Vá para https://aws.amazon.com/marketplace/pp/prodview-auupmqjoq43ey?sr=0-1&ref_=beagle&applicationId=AWSMPContessa["AWS Marketplace"^] .
+. Selecione *Ver opções de compra*.
+. Se for solicitado, faça login na sua conta da AWS ou crie uma nova conta.
+. Siga as instruções para assinar um plano.
+
+
+
+
+== Inscreva-se no Astra Control Service diretamente com NetApp
+
+Você pode se inscrever no serviço Astra Control na IU do serviço Astra Control ou entrar em Contato com a NetApp Sales.
+
+
+
+=== Faça upgrade do Plano Gratuito para o Plano Premium PayGo
+
+Atualize seu plano de cobrança a qualquer momento para começar a gerenciar mais de 10 namespaces do Astra Control pagando conforme o uso. Tudo o que você precisa é de um cartão de crédito válido.
+
+.Passos
+. Selecione *conta* e, em seguida, selecione *faturamento*.
+. Em *Plans*, vá para *Premium PayGo* e selecione *Upgrade now*.
+. Forneça detalhes de pagamento para um cartão de crédito válido e selecione *Upgrade to Premium Plan*.
++
+
+NOTE: O Astra Control enviará um e-mail para você se o cartão de crédito estiver prestes a expirar.
+
+
+
+.Resultado
+Agora você pode gerenciar mais de 10 namespaces. O Astra Control começa a cobrar por _todos_ namespaces que você está gerenciando atualmente.
+
+
+
+=== Faça upgrade do Plano Gratuito para a assinatura Premium
+
+Entre em Contato com as vendas da NetApp para pagar antecipadamente com uma taxa com desconto com uma assinatura anual.
+
+.Passos
+. Selecione *conta* e, em seguida, selecione *faturamento*.
+. Em *Plans*, vá para *Premium Subscription* e selecione *Contact Sales*.
+. Forneça detalhes à equipe de vendas para iniciar o processo.
+
+
+.Resultado
+Um representante de vendas da NetApp entrará em Contato com você para processar seu pedido de compra. Após a conclusão do pedido, o Astra Control refletirá seu plano atual na guia *faturamento*.
+
+
+
+== Veja seus custos atuais e histórico de faturamento
+
+O Astra Control mostra seus custos mensais atuais, bem como um histórico detalhado de cobrança por namespace. Se você se inscreveu em um plano por meio de um Marketplace, o histórico de faturamento não estará visível (mas você poderá visualizá-lo fazendo login no Marketplace).
+
+.Passos
+. Selecione *conta* e, em seguida, selecione *faturamento*.
++
+Seus custos atuais aparecem sob a visão geral de faturamento.
+
+. Para ver o histórico de faturação por namespace, selecione *Histórico de faturação*.
++
+O Astra Control mostra os minutos de uso e o custo de cada namespace. Um minuto de uso é de quantos minutos o Astra Control gerenciou seu namespace durante um período de faturamento.
+
+. Selecione a lista pendente para selecionar um mês anterior.
+
+
+
+
+== Altere o cartão de crédito para Premium PayGo
+
+Se necessário, você pode alterar o cartão de crédito que o Astra Control tem registrado para cobrança.
+
+.Passos
+. Selecione *conta > faturamento > método de pagamento*.
+. Selecione o ícone de configuração.
+. Modificar o cartão de crédito.
+
+
+
+
+== Notas importantes
+
+* Seu plano de cobrança é por conta Astra Control.
++
+Se você tiver várias contas, cada uma tem seu próprio plano de faturamento.
+
+* Sua fatura do Astra Control inclui cobranças pelo gerenciamento de namespaces. Você será cobrado separadamente pelo seu fornecedor de nuvem pelo back-end de storage para volumes persistentes.
++
+link:../get-started/intro.html["Saiba mais sobre os preços do Astra Control"].
+
+* Cada período de faturamento termina no último dia do mês.
+* Você não pode fazer o downgrade de um Plano Premium para o Plano Gratuito.
+

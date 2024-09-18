@@ -1,0 +1,130 @@
+---
+sidebar: sidebar 
+permalink: get-started/install-astra-connector-declarative.html 
+keywords: connector, install, astra connector, manage cluster, add cluster, cluster, add, manage 
+summary: É possível instalar o Astra Connector para ajudar no gerenciamento de clusters privados. 
+---
+= (Visualização técnica) instale o conetor declarativo Kubernetes Astra
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/get-started/
+
+
+[role="lead"]
+Os clusters gerenciados usando workflows declarativos do Kubernetes usam o Astra Connector para permitir a comunicação entre o cluster gerenciado e o Astra Control. É necessário instalar o Astra Connector em todos os clusters que você gerenciará com workflows declarativos do Kubernetes.
+
+Você instala o conetor declarativo Kubernetes Astra usando comandos Kubernetes e arquivos de recursos personalizados (CR).
+
+.Sobre esta tarefa
+* Ao executar essas etapas, execute esses comandos no cluster que deseja gerenciar com o Astra Control.
+* Se você estiver usando um host de bastião, emita esses comandos a partir da linha de comando do host de bastião.
+
+
+.Antes de começar
+* Você precisa ter acesso ao cluster que deseja gerenciar com o Astra Control.
+* Você precisa de permissões de administrador do Kubernetes para instalar o operador Astra Connector no cluster.
+
+
+
+NOTE: Se o cluster estiver configurado com imposição de admissão de segurança de pod, que é o padrão para clusters Kubernetes 1,25 e posteriores, será necessário habilitar restrições PSA nos namespaces apropriados. link:prep-for-cluster-management.html["Prepare seu ambiente para gerenciamento de clusters com o Astra Control"]Consulte para obter instruções.
+
+.Passos
+. Instale o operador Astra Connector no cluster que você deseja gerenciar com workflows declarativos do Kubernetes. Quando você executa esse comando, o namespace `astra-connector-operator` é criado e a configuração é aplicada ao namespace:
++
+[source, console]
+----
+kubectl apply -f https://github.com/NetApp/astra-connector-operator/releases/download/24.02.0-202403151353/astraconnector_operator.yaml
+----
+. Verifique se o operador está instalado e pronto:
++
+[source, console]
+----
+kubectl get all -n astra-connector-operator
+----
+. Obtenha um token de API do Astra Control. Consulte o https://docs.netapp.com/us-en/astra-automation/get-started/get_api_token.html["Documentação do Astra Automation"^] para obter instruções.
+. Crie um segredo usando o token. Substitua o <API_TOKEN> pelo token recebido do Astra Control:
++
+[source, console]
+----
+kubectl create secret generic astra-token \
+--from-literal=apiToken=<API_TOKEN> \
+-n astra-connector
+----
+. Crie um segredo do Docker para usar para puxar a imagem do conetor Astra. Substitua os valores entre parêntesis> por informações do seu ambiente:
++
+
+NOTE: Você pode encontrar o <ASTRA_CONTROL_ACCOUNT_ID> na IU da Web do Astra Control. Na IU da Web, selecione o ícone de figura no canto superior direito da página e selecione *Acesso à API*.
+
++
+[source, console]
+----
+kubectl create secret docker-registry regcred \
+--docker-username=<ASTRA_CONTROL_ACCOUNT_ID> \
+--docker-password=<API_TOKEN> \
+-n astra-connector \
+--docker-server=cr.astra.netapp.io
+----
+. Crie o arquivo CR do Astra Connector e nomeie-o `astra-connector-cr.yaml`. Atualize os valores entre parêntesis> para corresponder ao seu ambiente Astra Control e à configuração de cluster:
++
+** <ASTRA_CONTROL_ACCOUNT_ID>: Obtido na IU da Web do Astra Control durante a etapa anterior.
+** <CLUSTER_NAME>: O nome que esse cluster deve ser atribuído no Astra Control.
+** <ASTRA_CONTROL_URL>: O URL da IU da Web do Astra Control. Por exemplo:
++
+[listing]
+----
+https://astra.control.url
+----
++
+[source, yaml]
+----
+apiVersion: astra.netapp.io/v1
+kind: AstraConnector
+metadata:
+  name: astra-connector
+  namespace: astra-connector
+spec:
+  astra:
+    accountId: <ASTRA_CONTROL_ACCOUNT_ID>
+    clusterName: <CLUSTER_NAME>
+    #Only set `skipTLSValidation` to `true` when using the default self-signed
+    #certificate in a proof-of-concept environment.
+    skipTLSValidation: false #Should be set to false in production environments
+    tokenRef: astra-token
+  natsSyncClient:
+    cloudBridgeURL: <ASTRA_CONTROL_HOST_URL>
+  imageRegistry:
+    name: cr.astra.netapp.io
+    secret: regcred
+----
+
+
+. Depois de preencher o `astra-connector-cr.yaml` ficheiro com os valores corretos, aplique o CR:
++
+[source, console]
+----
+kubectl apply -n astra-connector -f astra-connector-cr.yaml
+----
+. Verifique se o conetor Astra está totalmente implantado:
++
+[source, console]
+----
+kubectl get all -n astra-connector
+----
+. Verifique se o cluster está registrado no Astra Control:
++
+[source, console]
+----
+kubectl get astraconnectors.astra.netapp.io -A
+----
++
+Você deve ver saída semelhante ao seguinte:
+
++
+[listing]
+----
+NAMESPACE         NAME              REGISTERED   ASTRACONNECTORID                       STATUS
+astra-connector   astra-connector   true         00ac8-2cef-41ac-8777-ed0583e   Registered with Astra
+----
+. Verifique se o cluster aparece na lista de clusters gerenciados na página *clusters* da IU da Web Astra Control.
+

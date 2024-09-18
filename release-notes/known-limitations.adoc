@@ -1,0 +1,132 @@
+---
+sidebar: sidebar 
+permalink: release-notes/known-limitations.html 
+keywords: limitations, known limitations, interoperability 
+summary: As limitações conhecidas identificam plataformas, dispositivos ou funções que não são suportadas por esta versão do produto ou que não interoperam corretamente com ele. Revise essas limitações com cuidado. 
+---
+= Limitações conhecidas
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/release-notes/
+
+
+[role="lead"]
+As limitações conhecidas identificam plataformas, dispositivos ou funções que não são suportadas por esta versão do produto ou que não interoperam corretamente com ele. Revise essas limitações com cuidado.
+
+
+
+== Limitações gerais
+
+As limitações a seguir afetam o gerenciamento de clusters do Kubernetes do Astra Control Service em qualquer implantação do Kubernetes compatível.
+
+
+
+=== As conexões existentes com um pod Postgres causam falhas
+
+Quando você executa operações nos pods Postgres, você não deve se conetar diretamente dentro do pod para usar o comando psql. O Astra Control Service requer acesso psql para congelar e descongelar os bancos de dados. Se houver uma conexão pré-existente, o snapshot, o backup ou o clone falhará.
+
+
+
+=== A página atividade exibe até 100.000 eventos
+
+A página atividade do Astra Control pode exibir até 100.000 eventos. Para ver todos os eventos registados, recupere os eventos utilizando o https://docs.netapp.com/us-en/astra-automation/["API REST do Astra Control"^].
+
+ifdef::gcp[]
+
+
+
+== Limitações para o gerenciamento de clusters GKE
+
+As limitações a seguir se aplicam ao gerenciamento de clusters do Kubernetes no Google Kubernetes Engine (GKE).
+
+endif::gcp[]
+
+
+
+== Limitações de gerenciamento de aplicativos
+
+As limitações a seguir afetam o gerenciamento de aplicações do Astra Control Service.
+
+
+
+=== As operações de restauração no local para as classes de storage de economia ONTAP nas falham
+
+Se você executar uma restauração no local de um aplicativo (restaurar o aplicativo para seu namespace original) e a classe de armazenamento do aplicativo usar o `ontap-nas-economy` driver, a operação de restauração poderá falhar se o diretório instantâneo não estiver oculto. Antes de restaurar no local, siga as instruções em link:../use/protect-apps.html#enable-backup-and-restore-for-ontap-nas-economy-operations["Habilite o backup e a restauração de operações de economia de ONTAP nas"^] para ocultar o diretório de instantâneos.
+
+
+
+=== Vários aplicativos que usam o mesmo namespace não podem ser restaurados coletivamente para um namespace diferente
+
+Se você gerenciar várias aplicações que usam o mesmo namespace (criando várias definições de aplicações no Astra Control), não poderá restaurar todas as aplicações para um namespace único diferente. Você precisa restaurar cada aplicativo para seu próprio namespace separado.
+
+
+
+=== O Astra Control não atribui automaticamente buckets padrão nas instâncias da nuvem
+
+O Astra Control não atribui automaticamente um bucket padrão a nenhuma instância de nuvem. Você precisa definir manualmente um intervalo padrão para uma instância de nuvem. Se um bucket padrão não estiver definido, você não poderá executar operações de clone de aplicativo entre dois clusters.
+
+
+
+=== As operações de restauração no local de aplicativos que usam um gerenciador de certificados não são suportadas
+
+Esta versão do Astra Control Service não oferece suporte à restauração local de aplicativos com gerentes de certificados. Operações de restauração para um namespace diferente e operações de clone são compatíveis.
+
+
+
+=== Os clones do aplicativo falham após a implantação de uma aplicação com uma classe de storage definida
+
+Depois que um aplicativo é implantado com uma classe de armazenamento explicitamente definida (por exemplo, `helm install ...-set global.storageClass=netapp-cvs-perf-extreme`), as tentativas subsequentes de clonar o aplicativo exigem que o cluster de destino tenha a classe de armazenamento especificada originalmente. Clonar um aplicativo com uma classe de storage definida explicitamente para um cluster que não tenha a mesma classe de storage falhará. Não há etapas de recuperação neste cenário.
+
+
+
+=== Clones de aplicativos instalados usando operadores de referência pass by podem falhar
+
+O Astra Control é compatível com aplicativos instalados com operadores com escopo de namespace. Esses operadores são geralmente projetados com uma arquitetura "pass-by-value" em vez de "pass-by-reference". A seguir estão alguns aplicativos de operador que seguem estes padrões:
+
+* https://github.com/k8ssandra/cass-operator/tree/v1.7.1["Apache K8ssandra"^]
++
+
+NOTE: Para K8ssandra, são suportadas as operações de restauração no local. Uma operação de restauração para um novo namespace ou cluster requer que a instância original do aplicativo seja removida. Isto destina-se a garantir que as informações do grupo de pares transportadas não conduzam à comunicação entre instâncias. A clonagem da aplicação não é suportada.
+
+* https://github.com/jenkinsci/kubernetes-operator["Jenkins CI"^]
+* https://github.com/percona/percona-xtradb-cluster-operator["Cluster Percona XtraDB"^]
+
+
+Observe que o Astra Control pode não ser capaz de clonar um operador projetado com uma arquitetura "pass-by-reference" (por exemplo, o operador CockroachDB). Durante esses tipos de operações de clonagem, o operador clonado tenta consultar os segredos do Kubernetes do operador de origem, apesar de ter seu próprio novo segredo como parte do processo de clonagem. A operação de clone pode falhar porque o Astra Control não conhece os segredos do Kubernetes no operador de origem.
+
+
+NOTE: Durante as operações de clone, os aplicativos que precisam de um recurso do IngressClass ou webhooks para funcionar corretamente não devem ter esses recursos já definidos no cluster de destino.
+
+
+
+== Limitações de controle de acesso baseado em função (RBAC)
+
+As limitações a seguir se aplicam à maneira como o Astra Control limita o acesso do usuário a recursos ou funcionalidades.
+
+
+
+=== Um usuário com restrições de namespace RBAC pode adicionar e desgerenciar um cluster
+
+Um usuário com restrições de namespace RBAC não deve ter permissão para adicionar ou desgerenciar clusters. Devido a uma limitação atual, o Astra não impede que tais usuários desgerenciem clusters.
+
+
+
+=== Um usuário membro com restrições de namespace não pode acessar aplicativos clonados ou restaurados até que um usuário Admin adicione o namespace à restrição
+
+Qualquer `member` usuário com restrições RBAC por nome/ID de namespace pode clonar ou restaurar um aplicativo para um novo namespace no mesmo cluster ou para qualquer outro cluster na conta da organização. No entanto, o mesmo usuário não pode acessar o aplicativo clonado ou restaurado no novo namespace. Após uma operação de clone ou restauração criar um novo namespace, o administrador/proprietário da conta pode editar a `member` conta de usuário e atualizar as restrições de função para o usuário afetado conceder acesso ao novo namespace.
+
+
+
+=== Os snapshots podem falhar no Kubernetes 1,25 ou em clusters posteriores com certas versões de controladora de snapshot
+
+Os snapshots para clusters do Kubernetes que executam a versão 1,25 ou posterior podem falhar se a versão v1beta1 das APIs do controlador de snapshot estiver instalada no cluster.
+
+Como solução alternativa, faça o seguinte ao atualizar instalações existentes do Kubernetes 1,25 ou posteriores:
+
+. Remova quaisquer CRDs de Snapshot existentes e qualquer controladora de snapshot existente.
+. https://docs.netapp.com/us-en/trident/trident-managing-k8s/uninstall-trident.html["Desinstale o Astra Trident"^].
+. https://docs.netapp.com/us-en/trident/trident-use/vol-snapshots.html#deploy-a-volume-snapshot-controller["Instale as CRDs de snapshot e o controlador de snapshot"^].
+. https://docs.netapp.com/us-en/trident/trident-get-started/kubernetes-deploy.html["Instale a versão mais recente do Astra Trident"^].
+. https://docs.netapp.com/us-en/trident/trident-use/vol-snapshots.html#step-1-create-a-volumesnapshotclass["Crie um VolumeSnapshotClass"^].
+

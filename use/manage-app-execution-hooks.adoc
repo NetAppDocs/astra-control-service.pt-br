@@ -1,0 +1,432 @@
+---
+sidebar: sidebar 
+permalink: use/manage-app-execution-hooks.html 
+keywords: execution hook, hook, script, snapshot, backup, freeze, thaw, database 
+summary: Um gancho de execução é um script personalizado que você pode executar antes ou depois de um instantâneo de um aplicativo gerenciado. 
+---
+= Gerenciar ganchos de execução de aplicativos
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/use/
+
+
+[role="lead"]
+Um gancho de execução é uma ação personalizada que você pode configurar para ser executada em conjunto com uma operação de proteção de dados de um aplicativo gerenciado. Por exemplo, se você tiver um aplicativo de banco de dados, poderá usar um gancho de execução para pausar todas as transações de banco de dados antes de um snapshot e retomar as transações após a conclusão do snapshot. Isso garante snapshots consistentes com aplicativos.
+
+
+
+== Tipos de ganchos de execução
+
+O Astra Control Service dá suporte aos seguintes tipos de ganchos de execução, com base nos momentos em que podem ser executados:
+
+* Pré-instantâneo
+* Pós-snapshot
+* Pré-backup
+* Pós-backup
+* Pós-restauração
+
+
+
+
+== Filtros de gancho de execução
+
+Quando você adiciona ou edita um gancho de execução a um aplicativo, você pode adicionar filtros a um gancho de execução para gerenciar quais contentores o gancho corresponderá. Os filtros são úteis para aplicativos que usam a mesma imagem de contentor em todos os contentores, mas podem usar cada imagem para um propósito diferente (como o Elasticsearch). Os filtros permitem criar cenários onde os ganchos de execução são executados em alguns, mas não necessariamente em todos os contentores idênticos. Se você criar vários filtros para um único gancho de execução, eles serão combinados com um operador LÓGICO E. Você pode ter até 10 filtros ativos por gancho de execução.
+
+Cada filtro que você adicionar a um gancho de execução usa uma expressão regular para corresponder a containers em seu cluster. Quando um gancho corresponde a um recipiente, o gancho executará o script associado nesse recipiente. As expressões regulares para filtros usam a sintaxe da expressão regular 2 (RE2), que não suporta a criação de um filtro que exclui contentores da lista de correspondências. Para obter informações sobre a sintaxe que o Astra Control suporta para expressões regulares em filtros de gancho de execução, https://github.com/google/re2/wiki/Syntax["Suporte à sintaxe da expressão regular 2 (RE2)"^] consulte .
+
+
+NOTE: Se você adicionar um filtro de namespace a um gancho de execução que é executado após uma operação de restauração ou clone e a origem e destino de restauração ou clone estiverem em namespaces diferentes, o filtro de namespace será aplicado somente ao namespace de destino.
+
+
+
+== Notas importantes sobre ganchos de execução personalizados
+
+Considere o seguinte ao Planejar ganchos de execução para seus aplicativos.
+
+[NOTE]
+====
+Como os ganchos de execução geralmente reduzem ou desativam completamente a funcionalidade do aplicativo em que estão sendo executados, você deve sempre tentar minimizar o tempo que seus ganchos de execução personalizados demoram para serem executados. Se você iniciar uma operação de backup ou snapshot com ganchos de execução associados, mas depois cancelá-la, os ganchos ainda poderão ser executados se a operação de backup ou snapshot já tiver começado. Isso significa que a lógica usada em um gancho de execução pós-backup não pode assumir que o backup foi concluído.
+
+====
+* O recurso ganchos de execução é desativado por padrão para novas implantações do Astra Control.
++
+** Você precisa ativar o recurso de ganchos de execução antes de usar ganchos de execução.
+** Os usuários proprietários ou administradores podem ativar ou desativar o recurso ganchos de execução para todos os usuários definidos na conta atual do Astra Control. <<Ative o recurso ganchos de execução>>Consulte e <<Desative o recurso ganchos de execução>> para obter instruções.
+** O status de capacitação do recurso é preservado durante as atualizações do Astra Control.
+
+
+* Um gancho de execução deve usar um script para executar ações. Muitos ganchos de execução podem referenciar o mesmo script.
+* O Astra Control requer que os scripts que os ganchos de execução usam sejam escritos no formato de scripts shell executáveis.
+* O tamanho do script está limitado a 96kbMB.
+* O Astra Control usa configurações de gancho de execução e quaisquer critérios correspondentes para determinar quais ganchos são aplicáveis a uma operação de snapshot, backup ou restauração.
+* Todas as falhas no gancho de execução são falhas suaves; outros ganchos e a operação de proteção de dados ainda são tentados, mesmo que um gancho falhe. No entanto, quando um gancho falha, um evento de aviso é registrado no log de eventos da página *atividade*.
+* Para criar, editar ou excluir ganchos de execução, você deve ser um usuário com permissões de proprietário, administrador ou membro.
+* Se um gancho de execução demorar mais de 25 minutos para ser executado, o gancho falhará, criando uma entrada de log de eventos com um código de retorno de "N/A". Qualquer instantâneo afetado expira e será marcado como falhou, com uma entrada de log de eventos resultante anotando o tempo limite.
+* Para operações de proteção de dados ad hoc, todos os eventos de gancho são gerados e salvos no log de eventos da página *atividade*. No entanto, para operações agendadas de proteção de dados, apenas eventos de falha de gancho são registrados no log de eventos (eventos gerados pelas próprias operações de proteção de dados agendadas ainda são registrados).
+
+
+
+
+=== Ordem de execução
+
+Quando uma operação de proteção de dados é executada, os eventos de gancho de execução ocorrem na seguinte ordem:
+
+. Todos os ganchos de execução personalizados de pré-operação aplicáveis são executados nos contentores apropriados. Você pode criar e executar quantos ganchos de pré-operação personalizados você precisar, mas a ordem de execução desses ganchos antes da operação não é garantida nem configurável.
+. A operação de proteção de dados é realizada.
+. Todos os ganchos de execução pós-operação personalizados aplicáveis são executados nos contentores apropriados. Você pode criar e executar quantos ganchos de pós-operação personalizados você precisar, mas a ordem de execução desses ganchos após a operação não é garantida nem configurável.
+
+
+Se você criar vários ganchos de execução do mesmo tipo (por exemplo, pré-snapshot), a ordem de execução desses ganchos não será garantida. No entanto, a ordem de execução de ganchos de diferentes tipos é garantida. Por exemplo, a ordem de execução de uma configuração que tenha todos os tipos diferentes de ganchos seria assim:
+
+. Ganchos pré-backup executados
+. Ganchos pré-instantâneos executados
+. Ganchos pós-snapshot executados
+. Ganchos pós-backup executados
+. Ganchos pós-restauração executados
+
+
+Você pode ver um exemplo dessa configuração no cenário número 2 da tabela em <<Determine se um gancho vai funcionar>>.
+
+
+NOTE: Você deve sempre testar seus scripts de gancho de execução antes de habilitá-los em um ambiente de produção. Você pode usar o comando 'kubectl exec' para testar convenientemente os scripts. Depois de habilitar os ganchos de execução em um ambiente de produção, teste os snapshots e backups resultantes para garantir que eles sejam consistentes. Você pode fazer isso clonando o aplicativo para um namespace temporário, restaurando o snapshot ou o backup e testando o aplicativo.
+
+
+
+=== Determine se um gancho vai funcionar
+
+Use a tabela a seguir para ajudar a determinar se um gancho de execução personalizado será executado para seu aplicativo.
+
+Observe que todas as operações de aplicativos de alto nível consistem em executar uma das operações básicas de snapshot, backup ou restauração. Dependendo do cenário, uma operação de clone pode consistir em várias combinações dessas operações, portanto, o que os ganchos de execução executados por uma operação de clone variará.
+
+As operações de restauração no local exigem um snapshot ou backup existente, portanto, essas operações não executam snapshots ou ganchos de backup.
+
+[NOTE]
+====
+Se você iniciar, mas cancelar um backup que inclua um snapshot e houver ganchos de execução associados, alguns ganchos podem ser executados e outros podem não. Isso significa que um gancho de execução pós-backup não pode assumir que o backup foi concluído. Tenha em mente os seguintes pontos para backups cancelados com ganchos de execução associados:
+
+* Os ganchos de pré-backup e pós-backup são sempre executados.
+* Se o backup incluir um novo snapshot e o snapshot tiver iniciado, os ganchos pré-snapshot e pós-snapshot serão executados.
+* Se o backup for cancelado antes do início do snapshot, os ganchos pré-snapshot e pós-snapshot não serão executados.
+
+
+====
+[cols="9*"]
+|===
+| Cenário | Operação | Snapshot existente | Backup existente | Namespace | Cluster | Os ganchos instantâneos funcionam | Ganchos de segurança executados | Restaurar os ganchos de funcionamento 
+
+
+| 1 | Clone | N | N | Novo | O mesmo | Y | N | Y 
+
+
+| 2 | Clone | N | N | Novo | Diferente | Y | Y | Y 
+
+
+| 3 | Clone ou restauração | Y | N | Novo | O mesmo | N | N | Y 
+
+
+| 4 | Clone ou restauração | N | Y | Novo | O mesmo | N | N | Y 
+
+
+| 5 | Clone ou restauração | Y | N | Novo | Diferente | N | N | Y 
+
+
+| 6 | Clone ou restauração | N | Y | Novo | Diferente | N | N | Y 
+
+
+| 7 | Restaurar | Y | N | Existente | O mesmo | N | N | Y 
+
+
+| 8 | Restaurar | N | Y | Existente | O mesmo | N | N | Y 
+
+
+| 9 | Snapshot | N/A. | N/A. | N/A. | N/A. | Y | N/A. | N/A. 
+
+
+| 10 | Backup | N | N/A. | N/A. | N/A. | Y | Y | N/A. 
+
+
+| 11 | Backup | Y | N/A. | N/A. | N/A. | N | N | N/A. 
+|===
+
+
+== Exemplos de gancho de execução
+
+Visite o https://github.com/NetApp/Verda["Projeto NetApp Verda GitHub"] para baixar ganchos de execução reais para aplicativos populares, como Apache Cassandra e Elasticsearch. Você também pode ver exemplos e obter ideias para estruturar seus próprios ganchos de execução personalizados.
+
+
+
+== Ative o recurso ganchos de execução
+
+Se você é um usuário proprietário ou administrador, você pode ativar o recurso ganchos de execução. Quando você ativa o recurso, todos os usuários definidos nesta conta do Astra Control podem usar ganchos de execução e exibir ganchos de execução e scripts de gancho existentes.
+
+.Passos
+. Vá para *aplicativos* e selecione o nome de um aplicativo gerenciado.
+. Selecione a guia *ganchos de execução*.
+. Selecione *Ativar ganchos de execução*.
++
+A guia *Account* > *Feature settings* é exibida.
+
+. No painel *ganchos de execução*, selecione o menu de configurações.
+. Selecione *Ativar*.
+. Observe o aviso de segurança exibido.
+. Selecione *Sim, ative os ganchos de execução*.
+
+
+
+
+== Desative o recurso ganchos de execução
+
+Se você é um usuário proprietário ou administrador, você pode desativar o recurso ganchos de execução para todos os usuários definidos nesta conta Astra Control. Você deve excluir todos os ganchos de execução existentes antes de desativar o recurso ganchos de execução. <<Excluir um gancho de execução>>Consulte para obter instruções sobre como excluir um gancho de execução existente.
+
+.Passos
+. Vá para *Account* e selecione a guia *Feature settings*.
+. Selecione a guia *ganchos de execução*.
+. No painel *ganchos de execução*, selecione o menu de configurações.
+. Selecione *Desativar*.
+. Observe o aviso que aparece.
+. Digite `disable` para confirmar que deseja desativar o recurso para todos os usuários.
+. Selecione *Sim, desativar*.
+
+
+
+
+== Ver ganchos de execução existentes
+
+Você pode exibir ganchos de execução personalizados existentes para um aplicativo.
+
+.Passos
+. Vá para *aplicativos* e selecione o nome de um aplicativo gerenciado.
+. Selecione a guia *ganchos de execução*.
++
+Pode visualizar todos os ganchos de execução ativados ou desativados na lista resultante. Você pode ver o status de um gancho, quantos contentores ele corresponde, o tempo de criação e quando ele é executado (pré ou pós-operação). Você pode selecionar o `+` ícone ao lado do nome do gancho para expandir a lista de contentores em que ele será executado. Para ver os logs de eventos ao redor dos ganchos de execução para este aplicativo, vá para a guia *atividade*.
+
+
+
+
+
+== Exibir scripts existentes
+
+Você pode visualizar os scripts carregados existentes. Você também pode ver quais scripts estão em uso, e quais ganchos estão usando, nesta página.
+
+.Passos
+. Vá para *conta*.
+. Selecione a guia *Scripts*.
++
+Você pode ver uma lista de scripts carregados existentes nesta página. A coluna *usada por* mostra quais ganchos de execução estão usando cada script.
+
+
+
+
+
+== Adicione um script
+
+Cada gancho de execução deve usar um script para executar ações. Você pode adicionar um ou mais scripts que os ganchos de execução podem referenciar. Muitos ganchos de execução podem referenciar o mesmo script; isso permite que você atualize muitos ganchos de execução alterando apenas um script.
+
+.Passos
+. Certifique-se de que o recurso de ganchos de execução é <<Ative o recurso ganchos de execução,ativado>>.
+. Vá para *conta*.
+. Selecione a guia *Scripts*.
+. Selecione *Adicionar*.
+. Execute um dos seguintes procedimentos:
++
+** Carregue um script personalizado.
++
+... Selecione a opção *Upload file*.
+... Navegue até um arquivo e carregue-o.
+... Dê ao script um nome exclusivo.
+... (Opcional) Digite quaisquer notas que outros administradores devem saber sobre o script.
+... Selecione *Salvar script*.
+
+
+** Cole em um script personalizado da área de transferência.
++
+... Selecione a opção *Colar ou tipo*.
+... Selecione o campo de texto e cole o texto do script no campo.
+... Dê ao script um nome exclusivo.
+... (Opcional) Digite quaisquer notas que outros administradores devem saber sobre o script.
+
+
+
+
+. Selecione *Salvar script*.
+
+
+.Resultado
+O novo script aparece na lista na guia *Scripts*.
+
+
+
+== Excluir um script
+
+Você pode remover um script do sistema se ele não for mais necessário e não for usado por nenhum hooks de execução.
+
+.Passos
+. Vá para *conta*.
+. Selecione a guia *Scripts*.
+. Escolha um script que você deseja remover e selecione o menu na coluna *ações*.
+. Selecione *Eliminar*.
+
+
+
+NOTE: Se o script estiver associado a um ou mais ganchos de execução, a ação *Delete* não estará disponível. Para excluir o script, primeiro edite os ganchos de execução associados e associe-os a um script diferente.
+
+
+
+== Crie um gancho de execução personalizado
+
+Você pode criar um gancho de execução personalizado para um aplicativo e adicioná-lo ao Astra Control. <<Exemplos de gancho de execução>>Consulte para obter exemplos de gancho. Você precisa ter permissões de proprietário, administrador ou membro para criar ganchos de execução.
+
+
+NOTE: Quando você cria um script shell personalizado para usar como um gancho de execução, lembre-se de especificar o shell apropriado no início do arquivo, a menos que você esteja executando comandos específicos ou fornecendo o caminho completo para um executável.
+
+.Passos
+. Certifique-se de que o recurso de ganchos de execução é <<Ative o recurso ganchos de execução,ativado>>.
+. Selecione *aplicativos* e, em seguida, selecione o nome de um aplicativo gerenciado.
+. Selecione a guia *ganchos de execução*.
+. Selecione *Adicionar*.
+. Na área *Detalhes do gancho*:
++
+.. Determine quando o gancho deve funcionar selecionando um tipo de operação no menu suspenso *operação*.
+.. Introduza um nome exclusivo para o gancho.
+.. (Opcional) Digite quaisquer argumentos para passar para o gancho durante a execução, pressionando a tecla Enter após cada argumento que você inserir para gravar cada um.
+
+
+. (Opcional) na área *Hook Filter Details* (Detalhes do filtro do gancho), você pode adicionar filtros para controlar em quais contentores o gancho de execução é executado:
++
+.. Selecione *Adicionar filtro*.
+.. Na coluna *tipo de filtro gancho*, escolha um atributo no qual filtrar no menu suspenso.
+.. Na coluna *Regex*, insira uma expressão regular para usar como filtro. O Astra Control usa o https://github.com/google/re2/wiki/Syntax["Sintaxe regular expressão 2 (RE2) regex"^].
++
+
+NOTE: Se você filtrar o nome exato de um atributo (como um nome do pod) sem nenhum outro texto no campo de expressão regular, uma correspondência de subcadeia será executada. Para corresponder a um nome exato e apenas a esse nome, use a sintaxe exata de correspondência de cadeia de carateres (por exemplo, `^exact_podname$` ).
+
+.. Para adicionar mais filtros, selecione *Adicionar filtro*.
++
+
+NOTE: Vários filtros para um gancho de execução são combinados com um operador LÓGICO E. Você pode ter até 10 filtros ativos por gancho de execução.
+
+
+
+. Quando terminar, selecione *seguinte*.
+. Na área *Script*, execute um dos seguintes procedimentos:
++
+** Adicione um novo script.
++
+... Selecione *Adicionar*.
+... Execute um dos seguintes procedimentos:
++
+**** Carregue um script personalizado.
++
+..... Selecione a opção *Upload file*.
+..... Navegue até um arquivo e carregue-o.
+..... Dê ao script um nome exclusivo.
+..... (Opcional) Digite quaisquer notas que outros administradores devem saber sobre o script.
+..... Selecione *Salvar script*.
+
+
+**** Cole em um script personalizado da área de transferência.
++
+..... Selecione a opção *Colar ou tipo*.
+..... Selecione o campo de texto e cole o texto do script no campo.
+..... Dê ao script um nome exclusivo.
+..... (Opcional) Digite quaisquer notas que outros administradores devem saber sobre o script.
+
+
+
+
+
+
+** Selecione um script existente na lista.
++
+Isso instrui o gancho de execução a usar este script.
+
+
+
+. Selecione *seguinte*.
+. Reveja a configuração do gancho de execução.
+. Selecione *Adicionar*.
+
+
+
+
+== Verifique o estado de um gancho de execução
+
+Depois que uma operação de snapshot, backup ou restauração terminar de ser executada, você pode verificar o estado dos ganchos de execução executados como parte da operação. Você pode usar essas informações de status para determinar se deseja manter o gancho de execução, modificá-lo ou excluí-lo.
+
+.Passos
+. Selecione *aplicativos* e, em seguida, selecione o nome de um aplicativo gerenciado.
+. Selecione a guia *proteção de dados*.
+. Selecione *Snapshots* para ver os snapshots em execução ou *backups* para ver os backups em execução.
++
+O estado *Hook* mostra o status da execução do hook run após a conclusão da operação. Você pode passar o Mouse sobre o estado para obter mais detalhes. Por exemplo, se houver falhas de gancho de execução durante um instantâneo, passar o Mouse sobre o estado de gancho para esse instantâneo fornece uma lista de ganchos de execução com falha. Para ver os motivos de cada falha, você pode verificar a página *atividade* na área de navegação do lado esquerdo.
+
+
+
+
+
+== Exibir o uso do script
+
+Você pode ver quais ganchos de execução usam um script específico na IU da Web do Astra Control.
+
+.Passos
+. Selecione *conta*.
+. Selecione a guia *Scripts*.
++
+A coluna *usada por* na lista de scripts contém detalhes sobre os ganchos que estão usando cada script na lista.
+
+. Selecione as informações na coluna *usado por* para um script em que você está interessado.
++
+Uma lista mais detalhada é exibida, com os nomes de ganchos que estão usando o script e o tipo de operação com os quais eles estão configurados para executar.
+
+
+
+
+
+== Edite um gancho de execução
+
+Você pode editar um gancho de execução se quiser alterar seus atributos, filtros ou o script que ele usa. Você precisa ter permissões de proprietário, administrador ou membro para editar ganchos de execução.
+
+.Passos
+. Selecione *aplicativos* e, em seguida, selecione o nome de um aplicativo gerenciado.
+. Selecione a guia *ganchos de execução*.
+. Selecione o menu Opções na coluna *ações* para um gancho que você deseja editar.
+. Selecione *Editar*.
+. Faça as alterações necessárias, selecionando *Next* após concluir cada seção.
+. Selecione *Guardar*.
+
+
+
+
+== Desativar um gancho de execução
+
+Você pode desativar um gancho de execução se quiser impedir temporariamente que ele seja executado antes ou depois de um instantâneo de um aplicativo. Você precisa ter permissões de proprietário, Administrador ou Membro para desativar os ganchos de execução.
+
+.Passos
+. Selecione *aplicativos* e, em seguida, selecione o nome de um aplicativo gerenciado.
+. Selecione a guia *ganchos de execução*.
+. Selecione o menu Opções na coluna *ações* para um gancho que você deseja desativar.
+. Selecione *Desativar*.
+
+
+
+
+== Excluir um gancho de execução
+
+Você pode remover um gancho de execução inteiramente se você não precisar mais dele. Você precisa ter permissões de proprietário, administrador ou membro para excluir ganchos de execução.
+
+.Passos
+. Selecione *aplicativos* e, em seguida, selecione o nome de um aplicativo gerenciado.
+. Selecione a guia *ganchos de execução*.
+. Selecione o menu Opções na coluna *ações* para um gancho que você deseja excluir.
+. Selecione *Eliminar*.
+. Na caixa de diálogo resultante, digite "delete" para confirmar.
+. Selecione *Sim, excluir o gancho de execução*.
+
+
+
+
+== Para mais informações
+
+* https://github.com/NetApp/Verda["Projeto NetApp Verda GitHub"]
+

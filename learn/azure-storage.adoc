@@ -1,0 +1,72 @@
+---
+sidebar: sidebar 
+permalink: learn/azure-storage.html 
+keywords: service level, cvs, cvs-performance, storage class, storage classes, pv size, persistent volume size, volume size, bandwidth, performance 
+summary: 'O Astra Control Service usa o Azure NetApp Files como back-end de storage para clusters do Azure Kubernetes Service (AKS). Você deve entender como escolher uma classe de storage e um tamanho de volume persistente pode ajudar você a atingir seus objetivos de performance.' 
+---
+= Classes de armazenamento e tamanho PV para clusters AKS
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/learn/
+
+
+[role="lead"]
+O Astra Control Service é compatível com Azure NetApp Files, discos gerenciados do Azure ou NetApp Cloud Volumes ONTAP como o back-end de storage para clusters do Azure Kubernetes Service (AKS).
+
+
+
+== Azure NetApp Files
+
+O Astra Control Service é compatível com o Azure NetApp Files como o back-end de storage para clusters do Azure Kubernetes Service (AKS). Você deve entender como escolher uma classe de storage e um tamanho de volume persistente pode ajudar você a atingir seus objetivos de performance.
+
+
+
+=== Níveis de serviço e classes de armazenamento
+
+O Azure NetApp Files dá suporte a três níveis de serviço: Armazenamento ultra-sônico, armazenamento premium e armazenamento padrão. Cada um desses níveis de serviço foi projetado para diferentes necessidades de performance:
+
+Armazenamento ultra:: Fornece até 128 MIB/s de taxa de transferência por 1 TIB.
+Armazenamento premium:: Fornece até 64 MIB/s de taxa de transferência por 1 TIB.
+Armazenamento padrão:: Fornece até 16 MIB/s de taxa de transferência por 1 TIB.
+
+
+Esses níveis de serviço são um atributo de um pool de capacidade. Você precisa configurar um pool de capacidade para cada nível de serviço que deseja usar com os clusters do Kubernetes. link:../get-started/set-up-microsoft-azure-with-anf.html["Saiba como configurar pools de capacidade"].
+
+O Astra Control Service usa esses níveis de serviço como classes de storage para seus volumes persistentes. Quando você adiciona clusters de Kubernetes ao Astra Control Service, será solicitado que você escolha Ultra, Premium ou Standard como a classe de storage padrão. Os nomes das classes de armazenamento são _NetApp-anf-perf-ultra_, _NetApp-anf-perf-premium_ e _NetApp-anf-perf-standard_.
+
+https://docs.microsoft.com/en-us/azure/azure-netapp-files/azure-netapp-files-service-levels["Saiba mais sobre esses níveis de serviço nos documentos do Azure NetApp Files"^].
+
+
+
+=== Tamanho do volume persistente e performance
+
+Como descrito acima, a taxa de transferência para cada nível de serviço é por 1 TIB de capacidade provisionada. Isso significa que volumes maiores fornecem melhor desempenho. Portanto, você deve levar em consideração as necessidades de capacidade e performance ao provisionar volumes.
+
+
+
+=== Tamanho mínimo do volume
+
+O Astra Control Service provisiona volumes persistentes usando um volume mínimo de 100 GiB, mesmo que o PVC solicite um tamanho de volume menor. Por exemplo, se o PVC em um gráfico Helm solicitar 6 GiB, o Astra Control Service provisiona automaticamente um volume de 100 GiB.
+
+
+
+=== Backups de aplicativos
+
+Se você fizer backup de uma aplicação que reside no storage Azure NetApp Files, o Astra Control Service expandirá automaticamente o pool de capacidade. Após a conclusão do backup, o Astra Control Service diminui o pool de capacidade para seu tamanho anterior. Dependendo da sua assinatura do Azure, você pode incorrer em cobranças de armazenamento quando isso acontecer. Você pode ver um histórico de eventos de redimensionamento do pool de capacidade no log de eventos da página *atividade*.
+
+Se o pool de capacidade exceder o tamanho máximo permitido pela assinatura do Azure durante a operação de redimensionamento, a operação de backup falhará e um aviso será acionado a partir da API do Azure.
+
+
+
+== Discos gerenciados do Azure
+
+O Astra Control Service pode usar drivers da Container Storage Interface (CSI) para fazer interface com discos gerenciados do Azure como um back-end de storage. Esse serviço fornece storage em nível de bloco gerenciado pelo Azure.
+
+https://docs.microsoft.com/en-us/azure/virtual-machines/managed-disks-overview["Saiba mais sobre discos gerenciados do Azure"^].
+
+
+
+== NetApp Cloud Volumes ONTAP
+
+Para obter informações específicas sobre a configuração do NetApp Cloud Volumes ONTAP, incluindo recomendações de desempenho, visite o https://docs.netapp.com/us-en/cloud-manager-cloud-volumes-ontap/concept-performance.html["Documentação do NetApp Cloud Volumes ONTAP"^].

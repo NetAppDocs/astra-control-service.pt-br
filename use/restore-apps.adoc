@@ -1,0 +1,346 @@
+---
+sidebar: sidebar 
+permalink: use/restore-apps.html 
+keywords: restore app, restoring an app, restore an app, restore, ontap-nas-economy, disruptive, migration 
+summary: O Astra Control pode restaurar a configuração da aplicação e o storage persistente a partir de um snapshot ou backup. Backups de storage persistentes são transferidos do seu armazenamento de objetos, portanto, a restauração a partir de um backup existente será a mais rápida. 
+---
+= Restaurar aplicações
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/use/
+
+
+[role="lead"]
+O Astra Control pode restaurar sua aplicação a partir de um snapshot ou backup. A restauração a partir de um instantâneo existente será mais rápida ao restaurar o aplicativo para o mesmo cluster. Você pode usar a IU do Astra Control ou https://docs.netapp.com/us-en/astra-automation/index.html["API Astra Control"^] restaurar aplicações.
+
+
+NOTE: Se você adicionar um filtro de namespace a um gancho de execução que é executado após uma operação de restauração ou clone e a origem e destino de restauração ou clone estiverem em namespaces diferentes, o filtro de namespace será aplicado somente ao namespace de destino.
+
+.Antes de começar
+* * Proteja seus aplicativos primeiro *: É altamente recomendável que você tire um instantâneo ou backup de seu aplicativo antes de restaurá-lo. Isso permitirá clonar a partir do snapshot ou backup se a restauração não for bem-sucedida.
+* *Verificar volumes de destino*: Se você restaurar para uma classe de armazenamento diferente, verifique se a classe de armazenamento usa o mesmo modo de acesso de volume persistente (por exemplo, ReadWriteMany). A operação de restauração falhará se o modo de acesso ao volume persistente de destino for diferente. Por exemplo, se o volume persistente de origem usar o modo de acesso RWX, selecionar uma classe de armazenamento de destino que não seja capaz de fornecer RWX, como discos gerenciados do Azure, AWS EBS, Google Persistent Disk ou `ontap-san`, fará com que a operação de restauração falhe. Para obter mais informações sobre os modos de acesso de volume persistente, consulte https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes["Kubernetes"^] a documentação.
+* *Planejar necessidades de espaço*: Quando você executa uma restauração no local de um aplicativo que usa armazenamento NetApp ONTAP, o espaço usado pelo aplicativo restaurado pode dobrar. Depois de executar uma restauração no local, remova todos os snapshots indesejados do aplicativo restaurado para liberar espaço de armazenamento.
+* *Drivers de classe de armazenamento suportados*: O Astra Control suporta a restauração de backups usando classes de armazenamento suportadas pelos seguintes drivers:
++
+** `ontap-nas`
+** `ontap-nas-economy`
+** `ontap-san`
+** `ontap-san-economy`
+
+
+* * (Somente driver ONTAP-nas-Economy) backups e restaurações*: Antes de fazer backup ou restaurar um aplicativo que usa uma classe de armazenamento apoiada pelo `ontap-nas-economy` driver, verifique se o link:../use/protect-apps.html#enable-backup-and-restore-for-ontap-nas-economy-operations["O diretório snapshot no back-end de storage do ONTAP está oculto"]. A falha em ocultar esse diretório pode levar à perda de acesso ao aplicativo, especialmente se estiver usando NFSv3.
+
+
+[CAUTION]
+====
+Executar uma operação de restauração no local em um aplicativo que compartilhe recursos com outro aplicativo pode ter resultados não desejados. Todos os recursos compartilhados entre os aplicativos são substituídos quando uma restauração no local é executada em um dos aplicativos.
+
+====
+.Passos
+. Selecione *aplicativos* e, em seguida, selecione o nome de um aplicativo.
+. No menu Opções na coluna ações, selecione *Restaurar*.
+. Escolha o tipo de restauração:
++
+** *Restaurar para namespaces originais*: Use este procedimento para restaurar o aplicativo no local para o cluster original.
++
+... Selecione o instantâneo ou o backup a ser usado para restaurar o aplicativo no local, o que reverte o aplicativo para uma versão anterior de si mesmo.
+... Selecione *seguinte*.
++
+
+NOTE: Se você restaurar para um namespace que foi excluído anteriormente, um novo namespace com o mesmo nome será criado como parte do processo de restauração. Todos os usuários que tinham direitos para gerenciar aplicativos no namespace excluído anteriormente precisam restaurar manualmente os direitos para o namespace recém-criado.
+
+
+
+** * Restaurar para novos namespaces*: Use este procedimento para restaurar o aplicativo para outro cluster ou com namespaces diferentes da origem. Você também pode usar este procedimento para migrar um aplicativo para uma classe de armazenamento diferente.
++
+... Especifique o nome do aplicativo restaurado.
+... Escolha o cluster de destino para o aplicativo que você pretende restaurar.
+... Insira um namespace de destino para cada namespace de origem associado ao aplicativo.
++
+
+NOTE: O Astra Control cria novos namespaces de destino como parte dessa opção de restauração. Namespaces de destino que você especificar não devem estar presentes no cluster de destino.
+
+... Selecione *seguinte*.
+... Selecione o instantâneo ou a cópia de segurança a utilizar para restaurar a aplicação.
+... Selecione *seguinte*.
+... Escolha uma das seguintes opções:
++
+**** *Restaurar usando classes de armazenamento originais*: O aplicativo usa a classe de armazenamento originalmente associada, a menos que não exista no cluster de destino. Neste caso, a classe de armazenamento padrão para o cluster será usada.
+**** *Restaurar usando uma classe de armazenamento diferente*: Selecione uma classe de armazenamento existente no cluster de destino. Todos os volumes de aplicativos, independentemente de suas classes de armazenamento originalmente associadas, serão migrados para essa classe de armazenamento diferente como parte da restauração.
+
+
+... Selecione *seguinte*.
+
+
+
+
+. Escolha quaisquer recursos para filtrar:
++
+** *Restaurar todos os recursos*: Restaure todos os recursos associados ao aplicativo original.
+** *Filtrar recursos*: Especifique regras para restaurar um sub-conjunto dos recursos originais do aplicativo:
++
+... Escolha incluir ou excluir recursos do aplicativo restaurado.
+... Selecione *Adicionar regra de inclusão* ou *Adicionar regra de exclusão* e configure a regra para filtrar os recursos corretos durante a restauração do aplicativo. Você pode editar uma regra ou removê-la e criar uma regra novamente até que a configuração esteja correta.
++
+
+NOTE: Para saber mais sobre como configurar regras de inclusão e exclusão, <<Filtre recursos durante uma restauração de aplicativos>>consulte .
+
+
+
+
+
+. Selecione *seguinte*.
+. Revise os detalhes sobre a ação de restauração cuidadosamente, digite "restaurar" (se solicitado) e selecione *Restaurar*.
+
+
+
+
+== [Visualização técnica] Restaurar a partir da cópia de segurança utilizando um recurso personalizado (CR)
+
+Você pode restaurar dados de um backup usando um arquivo de recurso personalizado (CR) para um namespace diferente ou para o namespace de origem original.
+
+[role="tabbed-block"]
+====
+.Restaurar a partir de uma cópia de segurança utilizando um CR
+--
+.Passos
+. Crie o arquivo de recurso personalizado (CR) e nomeie-o `astra-control-backup-restore-cr.yaml`. Atualize os valores entre parêntesis> para corresponder ao seu ambiente Astra Control e à configuração de cluster:
++
+** <CR_NAME>: O nome desta operação de CR; escolha um nome sensato para o seu ambiente.
+** <APPVAULT_NAME>: O nome do AppVault onde o conteúdo de backup é armazenado.
+** <BACKUP_PATH>: O caminho dentro do AppVault onde o conteúdo do backup é armazenado. Por exemplo:
++
+[listing]
+----
+ONTAP-S3_1343ff5e-4c41-46b5-af00/backups/schedule-20231213023800_94347756-9d9b-401d-a0c3
+----
+** <SOURCE_NAMESPACE>: O namespace de origem da operação de restauração.
+** <DESTINATION_NAMESPACE>: O namespace de destino da operação de restauração.
++
+[source, yaml]
+----
+apiVersion: astra.netapp.io/v1
+kind: BackupRestore
+metadata:
+  name: <CR_NAME>
+  namespace: astra-connector
+spec:
+  appVaultRef: <APPVAULT_NAME>
+  appArchivePath: <BACKUP_PATH>
+  namespaceMapping: [{"source": "<SOURCE_NAMESPACE>", "destination": "<DESTINATION_NAMESPACE>"}]
+----
+
+
+
+
+Diretiva não resolvida no <stdin> - include:../_include/selective-restore-CR.adoc[]
+
+. Depois de preencher o `astra-control-backup-restore-cr.yaml` ficheiro com os valores corretos, aplique o CR:
++
+[source, console]
+----
+kubectl apply -f astra-control-backup-restore-cr.yaml
+----
+
+
+--
+.Restaure do backup para o namespace original usando um CR
+--
+.Passos
+. Crie o arquivo de recurso personalizado (CR) e nomeie-o `astra-control-backup-ipr-cr.yaml`. Atualize os valores entre parêntesis> para corresponder ao seu ambiente Astra Control e à configuração de cluster:
++
+** <CR_NAME>: O nome desta operação de CR; escolha um nome sensato para o seu ambiente.
+** <APPVAULT_NAME>: O nome do AppVault onde o conteúdo de backup é armazenado.
+** <BACKUP_PATH>: O caminho dentro do AppVault onde o conteúdo do backup é armazenado. Por exemplo:
++
+[listing]
+----
+ONTAP-S3_1343ff5e-4c41-46b5-af00/backups/schedule-20231213023800_94347756-9d9b-401d-a0c3
+----
++
+[source, yaml]
+----
+apiVersion: astra.netapp.io/v1
+kind: BackupInplaceRestore
+metadata:
+  name: <CR_NAME>
+  namespace: astra-connector
+spec:
+  appVaultRef: <APPVAULT_NAME>
+  appArchivePath: <BACKUP_PATH>
+----
+
+
+
+
+Diretiva não resolvida no <stdin> - include:../_include/selective-restore-CR.adoc[]
+
+. Depois de preencher o `astra-control-backup-ipr-cr.yaml` ficheiro com os valores corretos, aplique o CR:
++
+[source, console]
+----
+kubectl apply -f astra-control-backup-ipr-cr.yaml
+----
+
+
+--
+====
+
+
+== [Visualização técnica] Restaurar a partir de instantâneos utilizando um recurso personalizado (CR)
+
+É possível restaurar dados de um snapshot usando um arquivo de recurso personalizado (CR) para um namespace diferente ou namespace de origem original.
+
+[role="tabbed-block"]
+====
+.Restaurar a partir de instantâneos usando um CR
+--
+.Passos
+. Crie o arquivo de recurso personalizado (CR) e nomeie-o `astra-control-snapshot-restore-cr.yaml`. Atualize os valores entre parêntesis> para corresponder ao seu ambiente Astra Control e à configuração de cluster:
++
+** <CR_NAME>: O nome desta operação de CR; escolha um nome sensato para o seu ambiente.
+** <APPVAULT_NAME>: O nome do AppVault onde o conteúdo de backup é armazenado.
+** <BACKUP_PATH>: O caminho dentro do AppVault onde o conteúdo do backup é armazenado. Por exemplo:
++
+[listing]
+----
+ONTAP-S3_1343ff5e-4c41-46b5-af00/backups/schedule-20231213023800_94347756-9d9b-401d-a0c3
+----
+** <SOURCE_NAMESPACE>: O namespace de origem da operação de restauração.
+** <DESTINATION_NAMESPACE>: O namespace de destino da operação de restauração.
++
+[source, yaml]
+----
+apiVersion: astra.netapp.io/v1
+kind: SnapshotRestore
+metadata:
+  name: <CR_NAME>
+  namespace: astra-connector
+spec:
+  appArchivePath: <BACKUP_PATH>
+  appVaultRef: <APPVAULT_NAME>
+  namespaceMapping: [{"source": "<SOURCE_NAMESPACE>", "destination": "<DESTINATION_NAMESPACE>"}]
+----
+
+
+
+
+Diretiva não resolvida no <stdin> - include:../_include/selective-restore-CR.adoc[]
+
+. Depois de preencher o `astra-control-snapshot-restore-cr.yaml` ficheiro com os valores corretos, aplique o CR:
++
+[source, console]
+----
+kubectl apply -f astra-control-snapshot-restore-cr.yaml
+----
+
+
+--
+.Restaure do instantâneo para o namespace original usando um CR
+--
+.Passos
+. Crie o arquivo de recurso personalizado (CR) e nomeie-o `astra-control-snapshot-ipr-cr.yaml`. Atualize os valores entre parêntesis> para corresponder ao seu ambiente Astra Control e à configuração de cluster:
++
+** <CR_NAME>: O nome desta operação de CR; escolha um nome sensato para o seu ambiente.
+** <APPVAULT_NAME>: O nome do AppVault onde o conteúdo de backup é armazenado.
+** <BACKUP_PATH>: O caminho dentro do AppVault onde o conteúdo do backup é armazenado. Por exemplo:
++
+[listing]
+----
+ONTAP-S3_1343ff5e-4c41-46b5-af00/backups/schedule-20231213023800_94347756-9d9b-401d-a0c3
+----
++
+[source, yaml]
+----
+apiVersion: astra.netapp.io/v1
+kind: SnapshotInplaceRestore
+metadata:
+  name: <CR_NAME>
+  namespace: astra-connector
+spec:
+  appArchivePath: <BACKUP_PATH>
+  appVaultRef: <APPVAULT_NAME>
+----
+
+
+
+
+Diretiva não resolvida no <stdin> - include:../_include/selective-restore-CR.adoc[]
+
+. Depois de preencher o `astra-control-snapshot-ipr-cr.yaml` ficheiro com os valores corretos, aplique o CR:
++
+[source, console]
+----
+kubectl apply -f astra-control-snapshot-ipr-cr.yaml
+----
+
+
+--
+====
+.Resultado
+O Astra Control restaura a aplicação com base nas informações fornecidas. Se você restaurou o aplicativo no local, o conteúdo dos volumes persistentes existentes será substituído pelo conteúdo de volumes persistentes do aplicativo restaurado.
+
+
+NOTE: Após uma operação de proteção de dados (clone, backup ou restauração) e subsequente redimensionamento persistente de volume, há um atraso de até vinte minutos antes que o novo tamanho de volume seja exibido na IU da Web. A operação de proteção de dados é bem-sucedida em minutos. Você pode usar o software de gerenciamento do back-end de storage para confirmar a alteração no tamanho do volume.
+
+
+NOTE: Qualquer usuário membro com restrições de namespace por nome/ID de namespace ou por rótulos de namespace pode clonar ou restaurar um aplicativo para um novo namespace no mesmo cluster ou para qualquer outro cluster na conta da organização. No entanto, o mesmo usuário não pode acessar o aplicativo clonado ou restaurado no novo namespace. Após uma operação de clone ou restauração criar um novo namespace, o administrador/proprietário da conta pode editar a conta de usuário membro e atualizar as restrições de função para o usuário afetado conceder acesso ao novo namespace.
+
+
+
+== Filtre recursos durante uma restauração de aplicativos
+
+Você pode adicionar uma regra de filtro a uma link:../use/restore-apps.html["restaurar"] operação que especificará os recursos existentes do aplicativo a serem incluídos ou excluídos do aplicativo restaurado. Você pode incluir ou excluir recursos com base em um namespace, rótulo ou GVK (GroupVersionKind) especificado.
+
+.Leia mais sobre incluir e excluir cenários
+[%collapsible]
+====
+* *Você seleciona uma regra include com namespaces originais (in-place restore)*: Os recursos de aplicativo existentes que você definir na regra serão excluídos e substituídos por aqueles do snapshot selecionado ou backup que você está usando para a restauração. Quaisquer recursos que você não especificar na regra incluir permanecerão inalterados.
+* *Você seleciona uma regra de inclusão com novos namespaces*: Use a regra para selecionar os recursos específicos desejados no aplicativo restaurado. Quaisquer recursos que você não especificar na regra incluir não serão incluídos no aplicativo restaurado.
+* *Você seleciona uma regra de exclusão com namespaces originais (in-loco restore)*: Os recursos que você especificar para serem excluídos não serão restaurados e permanecerão inalterados. Os recursos que você não especificar para excluir serão restaurados do snapshot ou backup. Todos os dados em volumes persistentes serão excluídos e recriados se o StatefulSet correspondente fizer parte dos recursos filtrados.
+* *Você seleciona uma regra de exclusão com novos namespaces*: Use a regra para selecionar os recursos específicos que deseja remover do aplicativo restaurado. Os recursos que você não especificar para excluir serão restaurados do snapshot ou backup.
+
+
+====
+As regras são incluir ou excluir tipos. Regras que combinem inclusão e exclusão de recursos não estão disponíveis.
+
+.Passos
+. Depois de escolher filtrar recursos e selecionar uma opção incluir ou excluir no assistente Restaurar aplicativo, selecione *Adicionar regra de inclusão* ou *Adicionar regra de exclusão*.
++
+
+NOTE: Não é possível excluir quaisquer recursos com escopo de cluster que sejam incluídos automaticamente pelo Astra Control.
+
+. Configure a regra de filtro:
++
+
+NOTE: Você deve especificar pelo menos um namespace, rótulo ou GVK. Certifique-se de que todos os recursos que você mantém após as regras de filtro são suficientes para manter o aplicativo restaurado em um estado saudável.
+
++
+.. Selecione um namespace específico para a regra. Se você não fizer uma seleção, todos os namespaces serão usados no filtro.
++
+
+NOTE: Se o seu aplicativo originalmente continha vários namespaces e você o restaura para novos namespaces, todos os namespaces serão criados mesmo que eles não contenham recursos.
+
+.. (Opcional) Digite um nome de recurso.
+.. (Opcional) *Seletor de etiquetas*: Inclua a https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors["seletor de etiquetas"^] para adicionar à regra. O seletor de etiquetas é utilizado para filtrar apenas os recursos que correspondem à etiqueta selecionada.
+.. (Opcional) Selecione *Use GVK (GroupVersionKind) definido para filtrar recursos* para opções de filtragem adicionais.
++
+
+NOTE: Se você usar um filtro GVK, você deve especificar versão e tipo.
+
++
+... (Opcional) *Group*: Na lista suspensa, selecione o grupo da API do Kubernetes.
+... *Kind*: Na lista suspensa, selecione o esquema de objeto para o tipo de recurso do Kubernetes a ser usado no filtro.
+... *Versão*: Selecione a versão da API do Kubernetes.
+
+
+
+
+. Revise a regra criada com base em suas entradas.
+. Selecione *Adicionar*.
++
+
+TIP: Você pode criar quantos recursos incluir e excluir regras quiser. As regras aparecem no resumo do aplicativo de restauração antes de iniciar a operação.
+
+

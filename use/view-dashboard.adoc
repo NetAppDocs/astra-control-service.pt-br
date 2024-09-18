@@ -1,0 +1,26 @@
+---
+sidebar: sidebar 
+permalink: use/view-dashboard.html 
+keywords: dashboard, cluster health, unhealthy apps, protected apps, managed apps 
+summary: Clique em Dashboard para ver uma visualização de alto nível dos seus aplicativos, clusters e sua integridade. 
+---
+= Exibir um resumo da integridade do aplicativo e do cluster
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/use/
+
+
+[role="lead"]
+Clique no *Dashboard* para ver uma visualização de alto nível dos seus aplicativos, clusters e sua integridade.
+
+O mosaico Apps ajuda a identificar o seguinte:
+
+* Quantos aplicativos você está gerenciando atualmente.
+* Se esses aplicativos gerenciados estão saudáveis.
+* Se os aplicativos estão totalmente protegidos (eles são protegidos se os backups recentes estiverem disponíveis).
+
+
+Note que estes não são apenas números ou status - você pode detalhar cada um deles. Por exemplo, se os aplicativos não estiverem totalmente protegidos, você pode passar o Mouse sobre o ícone para identificar quais aplicativos não estão totalmente protegidos, o que inclui um motivo.
+
+O bloco clusters fornece detalhes semelhantes sobre a integridade do cluster e você pode detalhar para obter mais detalhes como você pode com um aplicativo.

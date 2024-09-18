@@ -1,0 +1,70 @@
+---
+sidebar: sidebar 
+permalink: get-started/register.html 
+keywords: BlueXP, sign up, log in, login, register, register for BlueXP, create account, sign up for account, get an account, account, accounts 
+summary: O Astra Control Service está integrado ao serviço de autenticação da NetApp BlueXP . Inscreva-se no BlueXP  para que você possa acessar o Astra Control Service e os outros serviços de nuvem da NetApp. 
+---
+= Registre-se para ter uma conta do Astra Control Service
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/get-started/
+
+
+[role="lead"]
+Para usar o serviço Astra Control, você precisa de uma conta do serviço Astra Control que esteja associada à sua conta do NetApp BlueXP . Conclua o processo de Registro do Serviço de Controle Astra e, se você ainda não tiver uma conta do BlueXP , inscreva-se no BlueXP  para acessar o Serviço de Controle Astra.
+
+
+
+== Registre-se para ter uma conta Astra Control
+
+Antes de fazer login no Astra Control Service, você precisa concluir um processo de Registro para obter uma conta do Astra Control Service.
+
+Ao usar o Astra Control Service, você gerenciará seus aplicativos de uma conta. Uma conta inclui usuários que podem visualizar e gerenciar os aplicativos dentro da conta, bem como seus detalhes de cobrança.
+
+.Passos
+. https://cloud.netapp.com/astra["Vá para a página Astra Control no BlueXP "^].
+. Selecione *Inscrever-se para o plano gratuito*.
+. Forneça as informações necessárias no formulário.
++
+Algumas coisas importantes a serem observadas ao preencher o formulário:
+
++
+** O nome e o endereço da sua empresa devem ser precisos porque os verificamos para atender aos requisitos da conformidade de Comércio Global.
+** O *Nome da conta Astra* é o nome da conta do Serviço Astra Control da sua empresa. Você verá esse nome na interface de usuário do Astra Control Service. Observe que você pode criar contas adicionais (até 5), se necessário.
+** No campo *Endereço de e-mail comercial*, se você tiver uma conta do NetApp BlueXP , digite o e-mail usado para essa conta aqui. Se você ainda não tiver uma conta do NetApp BlueXP , use o endereço de e-mail digitado aqui quando você se inscrever no BlueXP .
+
+
+. Selecione *criar conta*.
+
+
+
+
+== Inscreva-se no BlueXP 
+
+O Astra Control Service está integrado ao serviço de autenticação da NetApp BlueXP . Você pode fazer login no NetApp BlueXP  usando suas credenciais do site de suporte da BlueXP  ou da NetApp. Se você ainda não tiver uma conta do site de suporte da NetApp BlueXP  ou da NetApp, inscreva-se no BlueXP  para acessar o Serviço Astra Control e os outros serviços de nuvem da NetApp. Se você já tiver uma conta do site de suporte da BlueXP  ou da NetApp e tiver concluído o Registro, poderá acessar https://astra.netapp.io["Astra Control Service"^] diretamente usando suas credenciais do site de suporte da BlueXP  ou da NetApp.
+
+
+TIP: Você também pode usar o logon único para fazer login no BlueXP  usando credenciais do diretório corporativo (identidade federada). Para saber mais, vá para o https://cloud.netapp.com/help-center["Centro de Ajuda"^] e selecione *Opções de início de sessão na Cloud Central*.
+
+.Passos
+. Vá para https://cloud.netapp.com["NetApp BlueXP "^].
+. No canto superior direito, selecione *Introdução*.
+. Selecione *Inscrever-se*.
+. Preencha o formulário.
++
+Certifique-se de que o número de telefone e o endereço de e-mail inseridos aqui são os mesmos que você usou no formulário de Registro anterior do Astra Control.
+
+. Selecione *Inscrever-se*.
++
+
+TIP: O endereço de e-mail inserido nesses formulários é para sua ID de usuário do NetApp BlueXP . Use essa ID de usuário do BlueXP  ao se inscrever em uma nova conta do Astra Control ou quando um administrador do Astra Control convidar você para uma conta existente.
+
+. Aguarde um e-mail do NetApp BlueXP . O e-mail vem do endereço saas.support at NetApp.com, e pode levar alguns minutos para chegar. Certifique-se de verificar sua pasta de spam.
+. Quando o e-mail chegar, selecione o link no e-mail para verificar seu endereço de e-mail.
+
+
+.Resultado
+Agora você tem um login de usuário ativo do BlueXP .
+
+Agora que você está registrado, pode acessar o Astra Control diretamente usando suas credenciais BlueXP  do https://astra.netapp.io[].

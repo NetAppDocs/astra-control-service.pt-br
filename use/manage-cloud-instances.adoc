@@ -1,0 +1,54 @@
+---
+sidebar: sidebar 
+permalink: use/manage-cloud-instances.html 
+keywords: cloud, instance, manage, delete, remove, edit 
+summary: Gerencie as instâncias de nuvem que você adicionou quando adicionou novos clusters. 
+---
+= Gerenciar instâncias de nuvem
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/use/
+
+
+[role="lead"]
+Uma instância de nuvem é um domínio exclusivo dentro de um provedor de nuvem. Você pode criar várias instâncias de nuvem para cada fornecedor de nuvem e cada instância de nuvem tem seu próprio nome, credenciais e clusters associados.
+
+Você cria uma instância de nuvem quando adiciona um novo cluster ao Astra Control. Você pode editar uma instância da nuvem para alterar seu nome ou bucket padrão usando a IU do Astra Control e executar outras ações com a instância de nuvem usando a API Astra Control.
+
+
+
+== Adicione uma instância de nuvem
+
+Você pode adicionar uma nova instância de nuvem ao adicionar um novo cluster ao Astra Control. link:../get-started/add-first-cluster.html["Comece a gerenciar clusters de Kubernetes a partir do Astra Control Service"]Consulte para obter mais informações.
+
+
+
+== Edite uma instância de nuvem
+
+Você pode modificar uma instância de nuvem existente para um provedor de nuvem.
+
+.Passos
+. Vá para *instâncias da nuvem*.
+. Na lista de instâncias de nuvem, selecione o menu *ações* para a instância de nuvem que deseja editar.
+. Selecione *Editar*.
++
+Nesta página, você pode atualizar o nome e o bucket padrão da instância da nuvem.
+
++
+
+NOTE: Cada instância de nuvem no Astra Control precisa ter um nome exclusivo.
+
+
+
+
+
+== Gire as credenciais para uma instância de nuvem
+
+Você pode usar a API Astra Control para girar as credenciais para uma instância de nuvem. Para saber mais, https://docs.netapp.com/us-en/astra-automation["Vá para a documentação de automação do Astra"^].
+
+
+
+== Remover uma instância da nuvem
+
+Você pode usar a API Astra Control para remover uma instância de nuvem de um fornecedor de nuvem. Para saber mais, https://docs.netapp.com/us-en/astra-automation["Vá para a documentação de automação do Astra"^].

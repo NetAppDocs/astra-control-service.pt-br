@@ -1,0 +1,79 @@
+---
+sidebar: sidebar 
+permalink: use/clone-apps.html 
+keywords: clone app, clone storage, clone persistent storage, clone data, move workload, clone data, migrate data, data migration, move storage, move application, move data, migrate storage class 
+summary: Clone um aplicativo existente para criar um aplicativo duplicado no mesmo cluster do Kubernetes ou em outro cluster. A clonagem pode ajudar se você precisar mover aplicações e storage de um cluster Kubernetes para outro. Por exemplo, você pode querer mover workloads por meio de um pipeline de CD de CI e entre namespaces do Kubernetes. 
+---
+= Clonar e migrar aplicações
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/use/
+
+
+[role="lead"]
+Você pode clonar um aplicativo existente para criar um aplicativo duplicado no mesmo cluster do Kubernetes ou em outro cluster. Quando o Astra Control clona uma aplicação, ele cria um clone de sua configuração de aplicação e storage persistente.
+
+A clonagem pode ajudar se você precisar mover aplicações e storage de um cluster Kubernetes para outro. Por exemplo, você pode querer mover workloads por meio de um pipeline de CI/CD e entre namespaces do Kubernetes.
+
+
+NOTE: Se você adicionar um filtro de namespace a um gancho de execução que é executado após uma operação de restauração ou clone e a origem e destino de restauração ou clone estiverem em namespaces diferentes, o filtro de namespace será aplicado somente ao namespace de destino.
+
+.Antes de começar
+* *Verificar volumes de destino*: Se você clonar para uma classe de armazenamento diferente, verifique se a classe de armazenamento usa o mesmo modo de acesso de volume persistente (por exemplo, ReadWriteMany). A operação de clone falhará se o modo de acesso ao volume persistente de destino for diferente. Por exemplo, se o volume persistente de origem usar o modo de acesso RWX, selecionar uma classe de armazenamento de destino que não seja capaz de fornecer RWX, como discos gerenciados do Azure, AWS EBS, Google Persistent Disk ou `ontap-san`, fará com que a operação de clone falhe. Para obter mais informações sobre os modos de acesso de volume persistente, consulte https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes["Kubernetes"^] a documentação.
+* Para clonar aplicativos para um cluster diferente, você precisa ter certeza de que atribuiu um intervalo padrão para a instância de nuvem que contém o cluster de origem. Se a instância da nuvem de origem não tiver um bucket padrão definido, a operação de clone entre clusters falhará.
+* Durante as operações de clone, os aplicativos que precisam de um recurso do IngressClass ou webhooks para funcionar corretamente não devem ter esses recursos já definidos no cluster de destino.
+
+
+.Limitações de clone
+* *Classes de armazenamento explícitas*: Se você implantar um aplicativo com uma classe de armazenamento explicitamente definida e precisar clonar o aplicativo, o cluster de destino deverá ter a classe de armazenamento especificada originalmente. Clonar um aplicativo com uma classe de storage definida explicitamente para um cluster que não tenha a mesma classe de storage falhará.
+* *Aplicativos suportados pelo ONTAP-nas-Economy*: Você não pode usar operações de clonagem se a classe de armazenamento do aplicativo for apoiada pelo `ontap-nas-economy` driver. Você pode, no entantolink:../use/protect-apps.html#enable-backup-and-restore-for-ontap-nas-economy-operations["habilite o backup e a restauração de operações de economia de ONTAP nas"], .
+* *Clones e restrições de usuário*: Qualquer usuário membro com restrições de namespace por nome/ID de namespace ou por rótulos de namespace pode clonar ou restaurar um aplicativo para um novo namespace no mesmo cluster ou para qualquer outro cluster na conta de sua organização. No entanto, o mesmo usuário não pode acessar o aplicativo clonado ou restaurado no novo namespace. Após uma operação de clone ou restauração criar um novo namespace, o administrador/proprietário da conta pode editar a conta de usuário membro e atualizar as restrições de função para o usuário afetado conceder acesso ao novo namespace.
+* *Clones usam buckets padrão*:
++
+** Durante um backup de aplicativo ou restauração de aplicativo, você pode especificar um intervalo para usar. É necessário especificar um bucket padrão ao clonar entre clusters, mas especificar um bucket é opcional ao clonar no mesmo cluster.
+** Ao clonar entre clusters, a instância de nuvem que contém o cluster de origem da operação do clone precisa ter um conjunto de buckets padrão.
+** Não há opção de alterar buckets para um clone. Se você quiser controlar qual balde é usado, você pode link:../use/manage-buckets.html#edit-a-bucket["altere o intervalo padrão"]ou fazer um link:../use/protect-apps.html#create-a-backup["backup"] seguido por um link:../use/restore-apps.html["restaurar"] separadamente.
+
+
+* *Com o Jenkins CI*: Se você clonar uma instância implantada pelo operador do Jenkins CI, precisará restaurar manualmente os dados persistentes. Esta é uma limitação do modelo de implantação do aplicativo.
+
+
+.Passos
+. Selecione *aplicações*.
+. Execute um dos seguintes procedimentos:
++
+** Selecione o menu Opções na coluna *ações* para o aplicativo desejado.
+** Selecione o nome da aplicação pretendida e selecione a lista pendente de estado no canto superior direito da página.
+
+
+. Selecione *Clone*.
+. Especifique detalhes para o clone:
++
+** Introduza um nome.
+** Escolha um cluster de destino para o clone.
+** Insira namespaces de destino para o clone. Cada namespace de origem associado ao aplicativo mapeia para um namespace de destino.
++
+
+NOTE: O Astra Control cria novos namespaces de destino como parte da operação clone. Namespaces de destino que você especificar não devem estar presentes no cluster de destino.
+
+** Selecione *seguinte*.
+** Escolha manter a classe de armazenamento original associada ao aplicativo ou selecionar uma classe de armazenamento diferente.
++
+
+NOTE: Você pode migrar a classe de armazenamento de um aplicativo para uma classe de armazenamento de provedor de nuvem nativa ou outra classe de armazenamento suportada, migrar um aplicativo de uma classe de armazenamento suportada por `ontap-nas-economy` para uma classe de armazenamento suportada pelo `ontap-nas` mesmo cluster ou copiar o aplicativo para outro cluster com uma classe de armazenamento suportada `ontap-nas-economy` pelo driver.
+
++
+
+NOTE: Se você selecionar uma classe de armazenamento diferente e essa classe de armazenamento não existir no momento da restauração, um erro será retornado.
+
+
+
+. Selecione *seguinte*.
+. Reveja as informações sobre o clone e selecione *Clone*.
+
+
+.Resultado
+O Astra Control clona a aplicação com base nas informações fornecidas por você. A operação de clone é bem-sucedida quando o novo clone de aplicativo está `Healthy` no estado na página *aplicativos*.
+
+Após uma operação de clone ou restauração criar um novo namespace, o administrador/proprietário da conta pode editar a conta de usuário membro e atualizar as restrições de função para o usuário afetado conceder acesso ao novo namespace.

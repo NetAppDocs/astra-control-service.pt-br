@@ -1,0 +1,92 @@
+---
+sidebar: sidebar 
+permalink: use/manage-users.html 
+keywords: invite users, add users, remove users, delete users 
+summary: Convide os usuários a ingressar na sua conta Astra Control e remova os usuários que não deveriam mais ter acesso à sua conta. 
+---
+= Convide e remova usuários
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/use/
+
+
+[role="lead"]
+Convide os usuários a ingressar na sua conta Astra Control e remova os usuários que não deveriam mais ter acesso à conta.
+
+
+
+== Convide usuários
+
+Os proprietários e administradores de contas podem convidar outros usuários para ingressar na conta Astra Control.
+
+.Passos
+. Certifique-se de que o utilizador tem um link:../get-started/register.html["Login BlueXP "].
+. Selecione *conta*.
+. Na guia *usuários*, selecione *convidar*.
+. Introduza o nome do utilizador, o endereço de correio eletrónico e a respetiva função.
++
+Observe o seguinte:
+
++
+** O endereço de e-mail deve corresponder ao endereço de e-mail que o usuário usou para se inscrever no BlueXP .
+** Cada função fornece as seguintes permissões:
++
+*** Um *proprietário* tem permissões de administrador e pode excluir contas.
+*** Um *Admin* tem permissões de Membro e pode convidar outros usuários.
+*** Um *Membro* pode gerenciar totalmente aplicativos e clusters.
+*** Um *Viewer* pode visualizar recursos.
+
+
+
+
+. Para adicionar restrições a um utilizador com uma função Membro ou Visualizador, ative a caixa de verificação *restringir função a restrições*.
++
+Para obter mais informações sobre como adicionar restrições, link:manage-roles.html["Gerenciar funções"]consulte .
+
+. Para convidar outro usuário, selecione *Adicionar outro usuário* e insira informações para o novo usuário.
++
+Você pode convidar até 10 usuários de cada vez. Você pode navegar entre os usuários que está convidando no lado esquerdo da caixa de diálogo *convidar usuários*.
+
+. Selecione *convidar utilizadores*.
+
+
+.Resultado
+O usuário ou os usuários receberão um e-mail que os convida a ingressar na sua conta.
+
+
+
+== Altere a função de um usuário
+
+Um proprietário de conta pode alterar a função de todos os usuários, enquanto um Administrador de conta pode alterar a função de usuários que têm a função de Administrador, Membro ou Visualizador.
+
+.Passos
+. Selecione *conta*.
+. Na guia *usuários*, selecione o menu na coluna *ações* para o usuário.
+. Selecione *Editar função*.
+. Selecione uma nova função.
+. Para adicionar restrições a um utilizador com uma função Membro ou Visualizador, ative a caixa de verificação *restringir função a restrições*.
++
+Para obter mais informações sobre como adicionar restrições, link:manage-roles.html["Gerenciar funções"]consulte .
+
+. Selecione *Confirm*.
+
+
+.Resultado
+O Astra Control atualiza as permissões do usuário com base na nova função selecionada.
+
+
+
+== Remover usuários
+
+Um usuário com a função proprietário pode remover outros usuários da conta a qualquer momento.
+
+.Passos
+. Selecione *conta*.
+. Na guia *usuários*, selecione os usuários que você deseja remover.
+. Selecione o menu na coluna *ações* e selecione *Remover usuário*.
+. Quando for solicitado, confirme a exclusão digitando "remove" e selecione *Yes, Remove User*.
+
+
+.Resultado
+O Astra Control remove o usuário da conta.

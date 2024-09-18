@@ -1,0 +1,71 @@
+---
+sidebar: sidebar 
+permalink: release-notes/known-issues.html 
+keywords: bugs, known issues, problems 
+summary: Problemas conhecidos identificam problemas que podem impedi-lo de usar esta versão do produto com sucesso. 
+---
+= Problemas conhecidos
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/release-notes/
+
+
+[role="lead"]
+Problemas conhecidos identificam problemas que podem impedi-lo de usar esta versão do produto com sucesso.
+
+Os seguintes problemas conhecidos afetam a versão atual:
+
+.Aplicações
+* <<Não é possível definir um aplicativo em um namespace que foi excluído e recriado>>
+
+
+.Backup, restauração e clone
+* <<Os clones de aplicativos falham usando uma versão específica do PostgreSQL>>
+* <<Backups e snapshots de aplicativos falharão se a volumesnapshotclass for adicionada após o gerenciamento de um cluster>>
+* <<A restauração a partir de um backup ao usar a criptografia em trânsito Kerberos pode falhar>>
+* <<Os dados de backup permanecem no intervalo após a exclusão para buckets com política de retenção expirada>>
+
+
+.Outras questões
+* <<As operações de gerenciamento de dados da aplicação falham com erro de serviço interno (500) quando o Astra Trident está off-line>>
+
+
+
+
+== Não é possível definir um aplicativo em um namespace que foi excluído e recriado
+
+Se você definir um aplicativo com um namespace, excluir o namespace e reinstalar o aplicativo no mesmo namespace, a operação falhará com um código de erro 409. Para definir o aplicativo usando o namespace recriado, exclua a instância antiga primeiro.
+
+
+
+== Os clones de aplicativos falham usando uma versão específica do PostgreSQL
+
+Clones de aplicativos dentro do mesmo cluster falham consistentemente com o gráfico Bitnami PostgreSQL 11.5.0. Para clonar com sucesso, use uma versão anterior ou posterior do gráfico.
+
+
+
+== Backups e snapshots de aplicativos falharão se a volumesnapshotclass for adicionada após o gerenciamento de um cluster
+
+Backups e snapshots falham com um erro UI 500 nesse cenário. Como solução alternativa, atualize a lista de aplicativos.
+
+
+
+== A restauração a partir de um backup ao usar a criptografia em trânsito Kerberos pode falhar
+
+Quando você restaura um aplicativo de um backup para um back-end de armazenamento que esteja usando a criptografia em trânsito Kerberos, a operação de restauração pode falhar. Esse problema não afeta a restauração de um snapshot ou a replicação dos dados do aplicativo usando o NetApp SnapMirror.
+
+
+NOTE: Ao usar a criptografia em trânsito Kerberos com volumes NFSv4, verifique se os volumes NFSv4 estão usando as configurações corretas. Consulte a seção Configuração de domínio do NetApp NFSv4 (página 13) do https://www.netapp.com/media/16398-tr-3580.pdf["Guia de práticas recomendadas e aprimoramentos do NetApp NFSv4"^].
+
+
+
+== Os dados de backup permanecem no intervalo após a exclusão para buckets com política de retenção expirada
+
+Se você excluir o backup imutável de um aplicativo após a política de retenção do bucket expirar, o backup será excluído do Astra Control, mas não do bucket. Esse problema será corrigido em um lançamento futuro.
+
+
+
+== As operações de gerenciamento de dados da aplicação falham com erro de serviço interno (500) quando o Astra Trident está off-line
+
+Se o Astra Trident em um cluster de aplicações ficar offline (e for colocado novamente online) e se forem encontrados 500 erros de serviço interno ao tentar o gerenciamento de dados de aplicações, reinicie todos os nós do Kubernetes no cluster de aplicações para restaurar a funcionalidade.

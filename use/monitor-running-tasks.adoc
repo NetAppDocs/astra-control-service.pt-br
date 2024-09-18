@@ -1,0 +1,34 @@
+---
+sidebar: sidebar 
+permalink: use/monitor-running-tasks.html 
+keywords: activity, log, activities, running, tasks, monitor, status, state 
+summary: Você pode ver detalhes sobre a execução de tarefas no Astra Control. Por exemplo, quando você executa um snapshot, backup ou clone. 
+---
+= Monitorar tarefas em execução
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/use/
+
+
+[role="lead"]
+Você pode ver detalhes sobre tarefas e tarefas executadas que foram concluídas, falhadas ou canceladas nas últimas 24 horas no Astra Control. Por exemplo, você pode exibir o status de uma operação de backup, restauração ou clone em execução e ver detalhes como porcentagem concluída e tempo restante estimado. Você pode exibir o status de uma operação agendada que foi executada ou uma operação iniciada manualmente.
+
+Ao exibir uma tarefa em execução ou concluída, você pode expandir os detalhes da tarefa para ver o status de cada uma das subtarefas. A barra de progresso da tarefa está verde para tarefas em curso ou concluídas, azul para tarefas canceladas e vermelha para tarefas que falharam devido a um erro.
+
+
+NOTE: Para operações de clone, as subtarefas consistem em uma operação de restauração de snapshot e snapshot.
+
+Para consultar mais informações sobre tarefas com falha, link:monitor-account-activity.html["Monitorar a atividade da conta"]consulte .
+
+.Passos
+. Enquanto uma tarefa estiver em execução, vá para *aplicativos*.
+. Selecione o nome de uma aplicação na lista.
+. Nos detalhes do aplicativo, selecione a guia *tarefas*.
++
+Você pode exibir detalhes de tarefas atuais ou passadas e filtrar por estado da tarefa.
+
+
+
+
+NOTE: As tarefas são mantidas na lista *tarefas* por até 24 horas. Pode configurar este limite e outras definições do monitor de tarefas utilizando o https://docs.netapp.com/us-en/astra-automation/["API Astra Control"^].
